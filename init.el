@@ -1,231 +1,311 @@
-;; Package installation and loading
-(load (locate-user-emacs-file "init-packages.el"))
+(require 'package)
 
-;; Inhibit the startup message
-(setq inhibit-startup-message t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-;;
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(setq package-list
+      '(
+	consult
+	display-line-numbers
+	ef-themes
+	fontaine
+        helpful
+	orderless
+        org-super-agenda
+	spacious-padding
+	vertico
+	yascroll
+        zenburn-theme))
 
-;; Change the bell from sound to a visual one
-(setq visible-bell t)
+;; Initialize the packaging systems and prepares it to be used
+(package-initialize)
 
-;; Enable the display of the line numbers globally
-(global-display-line-numbers-mode 1)
+;; Fetch the list of available packages in the case it does not exist locally
+(unless package-archive-contents
+  (package-refresh-contents))
 
-;; Enable highlighting of the current line
-(global-hl-line-mode t)
+;; Try to install the packages within the package-list variable previously set
+(dolist (package package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
 
-;; Disable the cursor blinking
-(blink-cursor-mode -1)
-
-;; Disable the vertical scrollbar
-(scroll-bar-mode -1)
-
-;; Remember recently edited files
-(recentf-mode 1)
-
-;; Sets the history items to 25
-(setq history-length 25)
-
-;; Remember minibuffer prompt history
-(savehist-mode 1)
-
-;; Remember the last place you visited in a file
-(save-place-mode 1)
-
-;; Tell Emacs to write customizable variables on another file
-;; so that this init.el file don't get polluted
-(setq custom-file (locate-user-emacs-file "custom-vars.el"))
-(load custom-file 'noerror 'nomessage)
-
-;; Prevent using UI dialogs for prompts
-(setq use-dialog-box nil)
-
-;; Automatically revert buffers when the underlying file has changed
-(global-auto-revert-mode 1)
-
-;; Load zenburn theme and confirm that it is safe
-(load-theme 'zenburn t)
-
-;; Configure the incremental completion and selection
-;; narrowing Helm framework
-;;
-;; 2023-12-27: just discovered this framework and tested
-;; helm-find-files, helm-M-x and helm-show-kill-ring only
-;;
-(use-package helm
-  :diminish
-  :bind (("C-h a"   . helm-apropos)
-         ("C-x b"   . helm-mini)
-         ("C-x C-b" . helm-buffers-list)
-         ("C-x C-m" . helm-M-x)
-         ("C-x m"   . helm-M-x)
-         ("C-x C-f" . helm-find-files)
-         ("C-x C-r" . helm-recentf)
-         ("C-x r l" . helm-filtered-bookmarks)
-         ("C-x r b" . helm-filtered-bookmarks)
-         ("C-x i"   . helm-imenu)
-         ("M-y"     . helm-show-kill-ring)
-         ("M-i"     . helm-swoop-without-pre-input)
-         ("M-I"     . helm-swoop-back-to-last-point)
-         ("C-c M-i" . helm-multi-swoop)
-         ("C-x M-i" . helm-multi-swoop-all)))
-
-;; Disable line numbers for some modes
-;; global-display-line-numbers-mode
-(dolist (mode '(org-mode-hook
-		term-mode-hook
-		shell-mode-hook
-		eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-;; Load and configure the rainbow-delimiters package to improve
-;; the readability of multiple parenthesis in programming
-(use-package rainbow-delimiters
-  :hook (prog-mode . rainbow-delimiters-mode))
-
-;; Displays available keybindings some time after pressing
-;; key combinations like C-x
-(require 'which-key)
-(which-key-mode)
-
-;; Configuration for the helpful package, a better Emacs *help* buffer.
-;;
-;;; Note that the built-in `describe-function' includes both functions
-;;; and macros. `helpful-function' is functions only, so we provide
-;;; `helpful-callable' as a drop-in replacement.
-(global-set-key (kbd "C-h f") #'helpful-callable)
-(global-set-key (kbd "C-h v") #'helpful-variable)
-(global-set-key (kbd "C-h k") #'helpful-key)
-(global-set-key (kbd "C-h x") #'helpful-command)
-;;; Lookup the current symbol at point. C-c C-d is a common keybinding
-;;; for this in lisp modes.
-(global-set-key (kbd "C-c C-d") #'helpful-at-point)
-;;; Look up *F*unctions (excludes macros).
-;;;
-;;; By default, C-h F is bound to `Info-goto-emacs-command-node'. Helpful
-;;; already links to the manual, if a function is referenced there.
-(global-set-key (kbd "C-h F") #'helpful-function)
-
-;; Function to setup the org mode
-;;  org-indent-mode prefixes text lines with virtual spaces to align vertically;
-;;  variable-pitch-mode remaps the default face to the variable-pitch defined
-;; with set-face-attribute;
-;;  visual-line-mode wrap the line at word boiundaries near the right window edge;
-(defun nm/org-mode-setup ()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (visual-line-mode 1))
-
-;; Replace org-mode bullets with better ones
-(use-package org-bullets
-  :after org
-  :hook (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
-
-;; Define functions 
-(defvar nm/default-font-size 180)
-(defvar nm/default-variable-font-size 180)
-
-;; Set the default face
-(set-face-attribute 'default nil :font "Fira Code Retina" :height nm/default-font-size)
-
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height nm/default-font-size)
-
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Lucida Grande" :height nm/default-variable-font-size :weight 'regular)
-
-;; Define a function to setup org-mode font
-(defun nm/org-font-setup ()
-  ;; Replace list hyphen with dot
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-  
-  ;; Change the font size of the different org-mode header levels
-  ;; Set faces for heading levels
-  (dolist (face '((org-level-1 . 1.2)
-                  (org-level-2 . 1.1)
-                  (org-level-3 . 1.05)
-                  (org-level-4 . 1.0)
-                  (org-level-5 . 1.1)
-                  (org-level-6 . 1.1)
-                  (org-level-7 . 1.1)
-                  (org-level-8 . 1.1)))
-    (set-face-attribute (car face) nil :font "Lucida Grande" :weight 'regular :height (cdr face)))
-
-  ;; Ensure that anything that should be fixed-pitch in Org files appears that way
-  (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
-  (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
-  (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
-  (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number nil :inherit 'fixed-pitch)
-  (set-face-attribute 'line-number-current-line nil :inherit 'fixed-pitch))
+;; sets the default org-directory to a place where it can be synced with the Beorg mobile app via iCloud
+(setq org-directory "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org")
 
 (defcustom my/path-aliases
   (list :emacs    "~/.emacs.d"
-        :org      "~/Documents/org"
-	:botafogo "~/Documents/org/botafogo"
-	:personal "~/Documents/org/personal")
+        :org      org-directory
+        :botafogo (expand-file-name "botafogo" org-directory)
+        :personal (expand-file-name "personal" org-directory))
   "Location of my paths for ease of usage. Customize for each
-  environment if needed.")
+              environment if needed.")
 
 (defun my/path (dir &optional subpath)
-  "Build a path name. See https://github.com/arecker/emacs.d"
   (let ((dir (file-name-as-directory
               (cl-getf my/path-aliases dir
                        (format "~/%s" dir))))
         (subpath (or subpath "")))
     (concat dir subpath)))
 
-;(defcustom main-agenda (my/path :org "inbox.org")
-;  "This is used to store quickly todo items without refiling")
+(defcustom botafogo-agenda (my/path :botafogo "agenda.org")
+"This points to the filesystem path of the Botafogo agenda.org file")
 
-(setq
- org-agenda-files (list (my/path :org)
-			(my/path :botafogo "1:1.org")
-			(my/path :botafogo "agenda.org")
-			(my/path :botafogo "meetings.org")
-			(my/path :personal "agenda.org")
-			))
- 
-;; org-mode package configuration
-(use-package org
-  :hook (org-mode . nm/org-mode-setup)
+;;; Line numbers on the side of the window
+(use-package display-line-numbers
+  :ensure nil
+  :bind
+  ("<f7>" . display-line-numbers-mode)
   :config
-  (setq org-agenda-span 'day)
-  (setq org-agenda-start-with-log-mode t)
+  (setq-default display-line-numbers-type t)
+  ;; Those two variables were introduced in Emacs 27.1
+  (setq display-line-numbers-major-tick 0)
+  (setq display-line-numbers-minor-tick 0)
+  ;; Use absolute numbers in narrowed buffers
+  (setq-default display-line-numbers-widen t))
+
+(global-yascroll-bar-mode 1)
+
+(require 'fontaine)
+
+(setq fontaine-latest-state-file
+      (locate-user-emacs-file "fontaine-latest-state.eld"))
+
+;; Aporetic is my highly customised build of Iosevka:
+;; <https://github.com/protesilaos/aporetic>.
+(setq fontaine-presets
+      '((small
+         :default-family "Aporetic Serif Mono"
+         :default-height 115
+	 :default-weight semilight
+         :variable-pitch-family "Aporetic Sans")
+        (regular
+	 :default-height 130) ; like this it uses all the fallback values and is named `regular'
+        (large
+         :inherit medium
+         :default-height 150)
+        (presentation
+         :default-height 180)
+        (t
+         ;; I keep all properties for didactic purposes, but most can be
+         ;; omitted.  See the fontaine manual for the technicalities:
+         ;; <https://protesilaos.com/emacs/fontaine>.
+         :default-family "Aporetic Sans Mono"
+         :default-weight regular
+         :default-height 100
+
+         :fixed-pitch-family nil ; falls back to :default-family
+         :fixed-pitch-weight nil ; falls back to :default-weight
+         :fixed-pitch-height 1.0
+
+         :fixed-pitch-serif-family nil ; falls back to :default-family
+         :fixed-pitch-serif-weight nil ; falls back to :default-weight
+         :fixed-pitch-serif-height 1.0
+
+         :variable-pitch-family "Aporetic Serif"
+         :variable-pitch-weight nil
+         :variable-pitch-height 1.0
+
+         :mode-line-active-family nil ; falls back to :default-family
+         :mode-line-active-weight nil ; falls back to :default-weight
+         :mode-line-active-height 0.9
+
+         :mode-line-inactive-family nil ; falls back to :default-family
+         :mode-line-inactive-weight nil ; falls back to :default-weight
+         :mode-line-inactive-height 0.9
+
+         :header-line-family nil ; falls back to :default-family
+         :header-line-weight nil ; falls back to :default-weight
+         :header-line-height 0.9
+
+         :line-number-family nil ; falls back to :default-family
+         :line-number-weight nil ; falls back to :default-weight
+         :line-number-height 0.9
+
+         :tab-bar-family nil ; falls back to :default-family
+         :tab-bar-weight nil ; falls back to :default-weight
+         :tab-bar-height 1.0
+
+         :tab-line-family nil ; falls back to :default-family
+         :tab-line-weight nil ; falls back to :default-weight
+         :tab-line-height 1.0
+
+         :bold-family nil ; use whatever the underlying face has
+         :bold-weight bold
+
+         :italic-family nil
+         :italic-slant italic
+
+         :line-spacing nil)))
+
+;; Set the last preset or fall back to desired style from `fontaine-presets'
+;; (the `regular' in this case).
+(fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
+
+;; Persist the latest font preset when closing/starting Emacs and
+;; while switching between themes.
+(fontaine-mode 1)
+
+;; fontaine does not define any key bindings.  This is just a sample that
+;; respects the key binding conventions.  Evaluate:
+;;
+;;     (info "(elisp) Key Binding Conventions")
+(define-key global-map (kbd "C-c f") #'fontaine-set-preset)
+
+;; Make customisations that affect Emacs faces BEFORE loading a theme
+;; (any change needs a theme re-load to take effect).
+(require 'ef-themes)
+
+;; If you like two specific themes and want to switch between them, you
+;; can specify them in `ef-themes-to-toggle' and then invoke the command
+;; `ef-themes-toggle'.  All the themes are included in the variable
+;; `ef-themes-collection'.
+(setq ef-themes-to-toggle '(ef-day ef-night))
+
+(setq ef-themes-headings ; read the manual's entry or the doc string
+      '((0 variable-pitch light 1.9)
+        (1 variable-pitch light 1.8)
+        (2 variable-pitch regular 1.7)
+        (3 variable-pitch regular 1.6)
+        (4 variable-pitch regular 1.5)
+        (5 variable-pitch 1.4) ; absence of weight means `bold'
+        (6 variable-pitch 1.3)
+        (7 variable-pitch 1.2)
+        (t variable-pitch 1.1)))
+
+;; They are nil by default...
+(setq ef-themes-mixed-fonts t
+      ef-themes-variable-pitch-ui t)
+
+;; Disable all other themes to avoid awkward blending:
+(mapc #'disable-theme custom-enabled-themes)
+
+;; Load the theme of choice:
+(load-theme 'ef-summer :no-confirm)
+
+;; OR use this to load the theme which also calls `ef-themes-post-load-hook':
+(ef-themes-select 'ef-day)
+
+;; The themes we provide are recorded in the `ef-themes-dark-themes',
+;; `ef-themes-light-themes'.
+
+;; We also provide these commands, but do not assign them to any key:
+;;
+;; - `ef-themes-toggle'
+;; - `ef-themes-select'
+;; - `ef-themes-select-dark'
+;; - `ef-themes-select-light'
+;; - `ef-themes-load-random'
+;; - `ef-themes-preview-colors'
+;; - `ef-themes-preview-colors-current'
+
+(defun my/org-mode-setup ()
+  (org-indent-mode)      ; prefixes text lines with virtual spaces to vertically
+			   ; align with the headline text
+  (visual-line-mode 1))  ; wrap the line at word boundaries near the right window
+			   ; edge
+
+(use-package org
+  :ensure nil ; don't try to install it as it's built-in
+  :hook (org-mode . my/org-mode-setup)
+  :config
+  (setq org-M-RET-may-split-line '((default . nil)))
+  (setq org-insert-heading-respect-content t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
-  (setq org-ellipsis " ▾")
-  (setq org-hide-emphasis-markers t)
+  (setq org-ellipsis " ⮧")
+
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
+
+  ;;(setq org-agenda-span 'day)
+  ;;(setq org-agenda-start-with-log-mode t)
+  ;;(setq org-agenda-skip-scheduled-if-done t)
+  ;;(setq org-agenda-skip-deadline-if-done t)
+  ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+  ;;(setq org-hide-emphasis-markers t)
+  
   (set-face-underline 'org-ellipsis nil)
-  (nm/org-font-setup))
 
-(global-set-key (kbd "C-c l") #'org-store-link)
-(global-set-key (kbd "C-c a") #'org-agenda)
-(global-set-key (kbd "C-c c") #'org-capture)
+  (global-set-key (kbd "C-c l") #'org-store-link)
+  (global-set-key (kbd "C-c a") #'org-agenda)
+  (global-set-key (kbd "C-c c") #'org-capture)
 
-;; Define a function to configure the visual-fill-column on org-mode
-(defun nm/org-mode-visual-fill ()
-  (setq visual-fill-column-width 100
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
+  ;; Note that the built-in `describe-function' includes both functions
+  ;; and macros. `helpful-function' is functions only, so we provide
+  ;; `helpful-callable' as a drop-in replacement.
+  (global-set-key (kbd "C-h f") #'helpful-callable)
 
-;; Uses the visual-fill-column package on org-mode
-(use-package visual-fill-column
-  :hook (org-mode . nm/org-mode-visual-fill))
+  (global-set-key (kbd "C-h v") #'helpful-variable)
+  (global-set-key (kbd "C-h k") #'helpful-key)
+  (global-set-key (kbd "C-h x") #'helpful-command)
 
-;; org-super-agenda package configuration
-(use-package org-super-agenda
-;  :straight t
+  ;; Lookup the current symbol at point. C-c C-d is a common keybinding
+  ;; for this in lisp modes.
+  (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+
+					; Enable Python source code blocks in Org Mode
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t))))
+
+(use-package orderless
+  :ensure t
   :config
-  (org-super-agenda-mode 1))
+  (setq completion-styles '(orderless basic)))
+
+(vertico-mode)
+
+(require 'spacious-padding)
+
+;; These are the default values, but I keep them here for visibility.
+(setq spacious-padding-widths
+      '( :internal-border-width 15
+         :header-line-width 4
+         :mode-line-width 6
+         :tab-width 4
+         :right-divider-width 30
+         :scroll-bar-width 8
+         :fringe-width 8))
+
+;; Read the doc string of `spacious-padding-subtle-mode-line' as it
+;; is very flexible and provides several examples.
+(setq spacious-padding-subtle-frame-lines
+      `( :mode-line-active 'default
+         :mode-line-inactive vertical-border))
+
+;; Make the underlines appear below the base line, to create a more
+;; consistent effect between overlines and underlines.
+(setq x-underline-at-descent-line t)
+
+(spacious-padding-mode 1)
+
+;; Set a key binding if you need to toggle spacious padding.
+(define-key global-map (kbd "<f8>") #'spacious-padding-mode)
+
+(blink-cursor-mode -1)       ; disable the blinking of the cursor
+(scroll-bar-mode -1)         ; disable the scroll bar
+(recentf-mode 1)             ; remember recently edited files
+(savehist-mode 1)            ; remember minibuffer prompt history
+(save-place-mode 1)          ; remember the last place you visited in a file
+(global-auto-revert-mode 1)  ; automatically revert buffers when the underlying file has changed
+(setq use-dialog-box nil)    ; prevent using UI dialogs for prompts
+
+;; tell Emacs to write customizable variables on another file
+;; so that this init.el file don't get polluted
+(setq custom-file (locate-user-emacs-file "custom-vars.el"))
+(load custom-file 'noerror 'nomessage)
+
+;; enable which-key minor mode, that displays the key
+;; bindings following the currently entered incomplete
+;; command (a prefix) in a popup
+(which-key-mode)
+
+;; starts Emacs presenting the super agenda view
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              ;; Open your Org Super Agenda view
+              (org-agenda nil "u")
+              ;; Ensure only one window is open
+              (delete-other-windows)))
+              ;; Bury *scratch* buffer if it exists
+;;              (when (get-buffer "*scratch*")
+;;                (bury-buffer "*scratch*"))))
