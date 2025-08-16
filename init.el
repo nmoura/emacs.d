@@ -28,8 +28,7 @@
   (unless (package-installed-p package)
     (package-install package)))
 
-;; sets the default org-directory to a place where it can be synced with the Beorg mobile app via iCloud
-(setq org-directory "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org")
+(setq org-directory "/Users/nmoura/Documents/org")
 
 (defcustom my/path-aliases
   (list :emacs    "~/.emacs.d"
@@ -49,7 +48,7 @@
 (defcustom botafogo-agenda (my/path :botafogo "agenda.org")
 "This points to the filesystem path of the Botafogo agenda.org file")
 
-;;; Line numbers on the side of the window
+;; Line numbers on the side of the window
 (use-package display-line-numbers
   :ensure nil
   :bind
@@ -198,10 +197,10 @@
 ;; - `ef-themes-preview-colors-current'
 
 (defun my/org-mode-setup ()
-  (org-indent-mode)      ; prefixes text lines with virtual spaces to vertically
-			   ; align with the headline text
-  (visual-line-mode 1))  ; wrap the line at word boundaries near the right window
-			   ; edge
+  (org-indent-mode)       ;; prefixes text lines with virtual spaces to vertically
+                          ;; align with the headline text
+  (visual-line-mode 1))   ;; wrap the line at word boundaries near the right window
+                          ;; edge
 
 (use-package org
   :ensure nil ; don't try to install it as it's built-in
@@ -214,7 +213,7 @@
   (setq org-ellipsis " ⮧")
 
   (setq org-todo-keywords
-    '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
+	  '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
 
   ;;(setq org-agenda-span 'day)
   ;;(setq org-agenda-start-with-log-mode t)
@@ -222,7 +221,7 @@
   ;;(setq org-agenda-skip-deadline-if-done t)
   ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
   ;;(setq org-hide-emphasis-markers t)
-  
+
   (set-face-underline 'org-ellipsis nil)
 
   (global-set-key (kbd "C-c l") #'org-store-link)
@@ -242,10 +241,12 @@
   ;; for this in lisp modes.
   (global-set-key (kbd "C-c C-d") #'helpful-at-point)
 
-					; Enable Python source code blocks in Org Mode
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((python . t))))
+   '((eshell . t)
+     (latex . t)
+     (python . t)
+     (sql . t))))
 
 (use-package orderless
   :ensure t
@@ -298,6 +299,41 @@
 ;; bindings following the currently entered incomplete
 ;; command (a prefix) in a popup
 (which-key-mode)
+
+;; below an example of org-super-agenda from here: https://github.com/ebellani/Emacs.d/blob/master/init.el
+
+   (use-package org-super-agenda
+     :config
+     (org-super-agenda-mode 1)
+     (setq
+      org-agenda-custom-commands
+      '(("u" "Super view"
+         ((agenda "" ((org-super-agenda-groups
+                       '((:name "Work Habits"
+                                :and (:file-path "work" :habit t)
+                                :and (:file-path "data-risk" :habit t)
+                                :order 20)
+                         (:name "Personal Habits"
+                                :and (:file-path "personal" :habit t)
+                                :order 22)
+                         (:name "Work day notification"
+                                :property "work_reminder"
+                                :order 25)
+                         (:name "Important"
+                                :priority>= "B"
+                                :order 0)
+                         (:name "Late tasks"
+                                :deadline past
+                                :scheduled past
+                                :order 10)
+                         (:name "Regular for today"
+                                :time-grid t
+                                :date today
+                                :deadline  today
+                                :scheduled today
+                                :order 30))))))
+         ;; ((org-overriding-columns-format "%WSJF %ITEM %bv %tc %rr-oe %eff %ALLTAGS"))
+         ))))
 
 ;; starts Emacs presenting the super agenda view
   (add-hook 'emacs-startup-hook

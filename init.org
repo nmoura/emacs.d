@@ -1,5 +1,6 @@
 #+property: header-args :tangle "init.el"
 #+startup: content indent
+#+author: Nilton Moura
 
 * The early initialization file (early-init.el)
 
@@ -19,9 +20,10 @@ It has optimizations for the Emacs startup such as inhibiting startup screen or 
   (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 #+end_src
 
+
 * Packages' installation
 
-A list of packages to be installed in the variable ~package-list~. This snippet tells Emacs to install the packages that are not installed.
+~package-list~ is a list of packages to be installed. This snippet tells Emacs to install the packages that are not installed.
 
 #+begin_src emacs-lisp
   (require 'package)
@@ -55,11 +57,11 @@ A list of packages to be installed in the variable ~package-list~. This snippet 
       (package-install package)))
 #+end_src
 
+
 * Define custom variables, helpers etc.
 
 #+begin_src emacs-lisp
-  ;; sets the default org-directory to a place where it can be synced with the Beorg mobile app via iCloud
-  (setq org-directory "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org")
+  (setq org-directory "/Users/nmoura/Documents/org")
 #+end_src
 
 ** my/path-aliases
@@ -108,7 +110,7 @@ Example of the value of the ~botafogo-agenda~ variable created above:
 It binds the <f7> key to the display-line-numbers-mode so that the lines on the side of the screen show/hide.
 
 #+begin_src emacs-lisp
-  ;;; Line numbers on the side of the window
+  ;; Line numbers on the side of the window
   (use-package display-line-numbers
     :ensure nil
     :bind
@@ -275,56 +277,57 @@ Enable the yascroll globally.
 ** org - the plain text system major mode
 
 #+begin_src emacs-lisp
-      (defun my/org-mode-setup ()
-        (org-indent-mode)      ; prefixes text lines with virtual spaces to vertically
-      			   ; align with the headline text
-        (visual-line-mode 1))  ; wrap the line at word boundaries near the right window
-      			   ; edge
+            (defun my/org-mode-setup ()
+              (org-indent-mode)       ;; prefixes text lines with virtual spaces to vertically
+                                      ;; align with the headline text
+              (visual-line-mode 1))   ;; wrap the line at word boundaries near the right window
+                                      ;; edge
 
-      (use-package org
-        :ensure nil ; don't try to install it as it's built-in
-        :hook (org-mode . my/org-mode-setup)
-        :config
-        (setq org-M-RET-may-split-line '((default . nil)))
-        (setq org-insert-heading-respect-content t)
-        (setq org-log-done 'time)
-        (setq org-log-into-drawer t)
-        (setq org-ellipsis " ⮧")
+            (use-package org
+              :ensure nil ; don't try to install it as it's built-in
+              :hook (org-mode . my/org-mode-setup)
+              :config
+              (setq org-M-RET-may-split-line '((default . nil)))
+              (setq org-insert-heading-respect-content t)
+              (setq org-log-done 'time)
+              (setq org-log-into-drawer t)
+              (setq org-ellipsis " ⮧")
 
-        (setq org-todo-keywords
-          '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
+              (setq org-todo-keywords
+  		  '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
 
-        ;;(setq org-agenda-span 'day)
-        ;;(setq org-agenda-start-with-log-mode t)
-        ;;(setq org-agenda-skip-scheduled-if-done t)
-        ;;(setq org-agenda-skip-deadline-if-done t)
-        ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
-        ;;(setq org-hide-emphasis-markers t)
-        
-        (set-face-underline 'org-ellipsis nil)
+              ;;(setq org-agenda-span 'day)
+              ;;(setq org-agenda-start-with-log-mode t)
+              ;;(setq org-agenda-skip-scheduled-if-done t)
+              ;;(setq org-agenda-skip-deadline-if-done t)
+              ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+              ;;(setq org-hide-emphasis-markers t)
 
-        (global-set-key (kbd "C-c l") #'org-store-link)
-        (global-set-key (kbd "C-c a") #'org-agenda)
-        (global-set-key (kbd "C-c c") #'org-capture)
+              (set-face-underline 'org-ellipsis nil)
 
-        ;; Note that the built-in `describe-function' includes both functions
-        ;; and macros. `helpful-function' is functions only, so we provide
-        ;; `helpful-callable' as a drop-in replacement.
-        (global-set-key (kbd "C-h f") #'helpful-callable)
+              (global-set-key (kbd "C-c l") #'org-store-link)
+              (global-set-key (kbd "C-c a") #'org-agenda)
+              (global-set-key (kbd "C-c c") #'org-capture)
 
-        (global-set-key (kbd "C-h v") #'helpful-variable)
-        (global-set-key (kbd "C-h k") #'helpful-key)
-        (global-set-key (kbd "C-h x") #'helpful-command)
+              ;; Note that the built-in `describe-function' includes both functions
+              ;; and macros. `helpful-function' is functions only, so we provide
+              ;; `helpful-callable' as a drop-in replacement.
+              (global-set-key (kbd "C-h f") #'helpful-callable)
 
-        ;; Lookup the current symbol at point. C-c C-d is a common keybinding
-        ;; for this in lisp modes.
-        (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+              (global-set-key (kbd "C-h v") #'helpful-variable)
+              (global-set-key (kbd "C-h k") #'helpful-key)
+              (global-set-key (kbd "C-h x") #'helpful-command)
 
-      					; Enable Python source code blocks in Org Mode
-        (org-babel-do-load-languages
-         'org-babel-load-languages
-         '((python . t))))
+              ;; Lookup the current symbol at point. C-c C-d is a common keybinding
+              ;; for this in lisp modes.
+              (global-set-key (kbd "C-c C-d") #'helpful-at-point)
 
+              (org-babel-do-load-languages
+               'org-babel-load-languages
+               '((eshell . t)
+                 (latex . t)
+                 (python . t)
+                 (sql . t))))
 
 #+end_src
 
@@ -376,6 +379,77 @@ It let the environment beautier and comfortable.
 
   ;; Set a key binding if you need to toggle spacious padding.
   (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
+#+end_src
+
+
+* Miscellaneous configuration
+
+#+begin_src emacs-lisp
+
+    (blink-cursor-mode -1)       ; disable the blinking of the cursor
+    (scroll-bar-mode -1)         ; disable the scroll bar
+    (recentf-mode 1)             ; remember recently edited files
+    (savehist-mode 1)            ; remember minibuffer prompt history
+    (save-place-mode 1)          ; remember the last place you visited in a file
+    (global-auto-revert-mode 1)  ; automatically revert buffers when the underlying file has changed
+    (setq use-dialog-box nil)    ; prevent using UI dialogs for prompts
+
+    ;; tell Emacs to write customizable variables on another file
+    ;; so that this init.el file don't get polluted
+    (setq custom-file (locate-user-emacs-file "custom-vars.el"))
+    (load custom-file 'noerror 'nomessage)
+
+    ;; enable which-key minor mode, that displays the key
+    ;; bindings following the currently entered incomplete
+    ;; command (a prefix) in a popup
+    (which-key-mode)
+#+end_src
+
+** WIP - work in progress
+
+I need to configure:
+
+- capture template
+- create files
+- set org-agenda-files
+- add todos
+- configure agenda to show them
+
+#+begin_src emacs-lisp
+ ;; below an example of org-super-agenda from here: https://github.com/ebellani/Emacs.d/blob/master/init.el
+
+    (use-package org-super-agenda
+      :config
+      (org-super-agenda-mode 1)
+      (setq
+       org-agenda-custom-commands
+       '(("u" "Super view"
+          ((agenda "" ((org-super-agenda-groups
+                        '((:name "Work Habits"
+                                 :and (:file-path "work" :habit t)
+                                 :and (:file-path "data-risk" :habit t)
+                                 :order 20)
+                          (:name "Personal Habits"
+                                 :and (:file-path "personal" :habit t)
+                                 :order 22)
+                          (:name "Work day notification"
+                                 :property "work_reminder"
+                                 :order 25)
+                          (:name "Important"
+                                 :priority>= "B"
+                                 :order 0)
+                          (:name "Late tasks"
+                                 :deadline past
+                                 :scheduled past
+                                 :order 10)
+                          (:name "Regular for today"
+                                 :time-grid t
+                                 :date today
+                                 :deadline  today
+                                 :scheduled today
+                                 :order 30))))))
+          ;; ((org-overriding-columns-format "%WSJF %ITEM %bv %tc %rr-oe %eff %ALLTAGS"))
+          ))))
 #+end_src
 
 * open org agenda view and delete other windows
