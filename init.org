@@ -234,7 +234,10 @@ Enable the yascroll globally.
   ;; can specify them in `ef-themes-to-toggle' and then invoke the command
   ;; `ef-themes-toggle'.  All the themes are included in the variable
   ;; `ef-themes-collection'.
-  (setq ef-themes-to-toggle '(ef-day ef-night))
+  (setq ef-themes-to-toggle '(ef-day ef-maris-dark))
+
+  ;; define a keyboard shortcut to toggle between the predefined themes
+  (define-key global-map (kbd "C-c t") #'ef-themes-toggle)
 
   (setq ef-themes-headings ; read the manual's entry or the doc string
         '((0 variable-pitch light 1.9)
