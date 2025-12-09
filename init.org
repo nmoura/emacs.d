@@ -226,110 +226,107 @@ Enable the yascroll globally.
 
 #+begin_src emacs-lisp
 
-;; Make customisations that affect Emacs faces BEFORE loading a theme
-;; (any change needs a theme re-load to take effect).
-(require 'ef-themes)
+  ;; Make customisations that affect Emacs faces BEFORE loading a theme
+  ;; (any change needs a theme re-load to take effect).
+  (require 'ef-themes)
 
-;; If you like two specific themes and want to switch between them, you
-;; can specify them in `ef-themes-to-toggle' and then invoke the command
-;; `ef-themes-toggle'.  All the themes are included in the variable
-;; `ef-themes-collection'.
-(setq ef-themes-to-toggle '(ef-day ef-night))
+  ;; If you like two specific themes and want to switch between them, you
+  ;; can specify them in `ef-themes-to-toggle' and then invoke the command
+  ;; `ef-themes-toggle'.  All the themes are included in the variable
+  ;; `ef-themes-collection'.
+  (setq ef-themes-to-toggle '(ef-day ef-night))
 
-(setq ef-themes-headings ; read the manual's entry or the doc string
-      '((0 variable-pitch light 1.9)
-        (1 variable-pitch light 1.8)
-        (2 variable-pitch regular 1.7)
-        (3 variable-pitch regular 1.6)
-        (4 variable-pitch regular 1.5)
-        (5 variable-pitch 1.4) ; absence of weight means `bold'
-        (6 variable-pitch 1.3)
-        (7 variable-pitch 1.2)
-        (t variable-pitch 1.1)))
+  (setq ef-themes-headings ; read the manual's entry or the doc string
+        '((0 variable-pitch light 1.9)
+          (1 variable-pitch light 1.8)
+          (2 variable-pitch regular 1.7)
+          (3 variable-pitch regular 1.6)
+          (4 variable-pitch regular 1.5)
+          (5 variable-pitch 1.4) ; absence of weight means `bold'
+          (6 variable-pitch 1.3)
+          (7 variable-pitch 1.2)
+          (t variable-pitch 1.1)))
 
-;; They are nil by default...
-(setq ef-themes-mixed-fonts t
-      ef-themes-variable-pitch-ui t)
+  ;; They are nil by default...
+  (setq ef-themes-mixed-fonts t
+        ef-themes-variable-pitch-ui t)
 
-;; Disable all other themes to avoid awkward blending:
-(mapc #'disable-theme custom-enabled-themes)
+  ;; Disable all other themes to avoid awkward blending:
+  (mapc #'disable-theme custom-enabled-themes)
 
-;; Load the theme of choice:
-(load-theme 'ef-summer :no-confirm)
+  ;; Load the theme of choice:
+  (load-theme 'ef-day :no-confirm)
 
-;; OR use this to load the theme which also calls `ef-themes-post-load-hook':
-(ef-themes-select 'ef-day)
+  ;; The themes we provide are recorded in the `ef-themes-dark-themes',
+  ;; `ef-themes-light-themes'.
 
-;; The themes we provide are recorded in the `ef-themes-dark-themes',
-;; `ef-themes-light-themes'.
-
-;; We also provide these commands, but do not assign them to any key:
-;;
-;; - `ef-themes-toggle'
-;; - `ef-themes-select'
-;; - `ef-themes-select-dark'
-;; - `ef-themes-select-light'
-;; - `ef-themes-load-random'
-;; - `ef-themes-preview-colors'
-;; - `ef-themes-preview-colors-current'
+  ;; We also provide these commands, but do not assign them to any key:
+  ;;
+  ;; - `ef-themes-toggle'
+  ;; - `ef-themes-select'
+  ;; - `ef-themes-select-dark'
+  ;; - `ef-themes-select-light'
+  ;; - `ef-themes-load-random'
+  ;; - `ef-themes-preview-colors'
+  ;; - `ef-themes-preview-colors-current'
 #+end_src
 
 ** org - the plain text system major mode
 
 #+begin_src emacs-lisp
-  (defun my/org-mode-setup ()
-    (org-indent-mode)       ;; prefixes text lines with virtual spaces to vertically
-                            ;; align with the headline text
-    (visual-line-mode 1))   ;; wrap the line at word boundaries near the right window
-                            ;; edge
+    (defun my/org-mode-setup ()
+      (org-indent-mode)       ; prefixes text lines with virtual spaces to vertically
+                              ; align with the headline text
+      (visual-line-mode 1))   ; wrap the line at word boundaries near the right window
+                              ; edge
 
-  (use-package org
-    :ensure nil ; don't try to install it as it's built-in
-    :hook (org-mode . my/org-mode-setup)
-    :config
-    (setq org-M-RET-may-split-line '((default . nil)))
-    (setq org-insert-heading-respect-content t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
-    (setq org-ellipsis " ⮧")
+    (use-package org
+      :ensure nil ; don't try to install it as it's built-in
+      :hook (org-mode . my/org-mode-setup)
+      :config
+      (setq org-M-RET-may-split-line '((default . nil)))
+      (setq org-insert-heading-respect-content t)
+      (setq org-log-done 'time)
+      (setq org-log-into-drawer t)
+      (setq org-ellipsis " ⮧")
 
-    (setq org-todo-keywords
+      (setq org-todo-keywords
   	  '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
 
-    ;;(setq org-agenda-span 'day)
-    ;;(setq org-agenda-start-with-log-mode t)
-    ;;(setq org-agenda-skip-scheduled-if-done t)
-    ;;(setq org-agenda-skip-deadline-if-done t)
-    ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
-    ;;(setq org-hide-emphasis-markers t)
+      ;;(setq org-agenda-span 'day)
+      ;;(setq org-agenda-start-with-log-mode t)
+      ;;(setq org-agenda-skip-scheduled-if-done t)
+      ;;(setq org-agenda-skip-deadline-if-done t)
+      ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+      ;;(setq org-hide-emphasis-markers t)
 
-    (set-face-underline 'org-ellipsis nil)
+      (set-face-underline 'org-ellipsis nil)
 
-    (global-set-key (kbd "C-c l") #'org-store-link)
-    (global-set-key (kbd "C-c a") #'org-agenda)
-    (global-set-key (kbd "C-c c") #'org-capture)
+      (global-set-key (kbd "C-c l") #'org-store-link)
+      (global-set-key (kbd "C-c a") #'org-agenda)
+      (global-set-key (kbd "C-c c") #'org-capture)
 
-    ;; Note that the built-in `describe-function' includes both functions
-    ;; and macros. `helpful-function' is functions only, so we provide
-    ;; `helpful-callable' as a drop-in replacement.
-    (global-set-key (kbd "C-h f") #'helpful-callable)
+      ;; Note that the built-in `describe-function' includes both functions
+      ;; and macros. `helpful-function' is functions only, so we provide
+      ;; `helpful-callable' as a drop-in replacement.
+      (global-set-key (kbd "C-h f") #'helpful-callable)
 
-    (global-set-key (kbd "C-h v") #'helpful-variable)
-    (global-set-key (kbd "C-h k") #'helpful-key)
-    (global-set-key (kbd "C-h x") #'helpful-command)
+      (global-set-key (kbd "C-h v") #'helpful-variable)
+      (global-set-key (kbd "C-h k") #'helpful-key)
+      (global-set-key (kbd "C-h x") #'helpful-command)
 
-    ;; Lookup the current symbol at point. C-c C-d is a common keybinding
-    ;; for this in lisp modes.
-    (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+      ;; Lookup the current symbol at point. C-c C-d is a common keybinding
+      ;; for this in lisp modes.
+      (global-set-key (kbd "C-c C-d") #'helpful-at-point)
 
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((eshell . t)
-       (latex . t)
-       (python . t)
-       (sql . t))))
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '((eshell . t)
+         (latex . t)
+         (python . t)
+         (sql . t))))
 
-    (setq org-confirm-babel-evaluate nil)
+    (setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
 
 #+end_src
 

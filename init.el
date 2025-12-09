@@ -137,7 +137,7 @@
 
 ;; Set the last preset or fall back to desired style from `fontaine-presets'
 ;; (the `regular' in this case).
-(fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
+(fontaine-set-preset (or (fontaine-restore-latest-preset) 'large))
 
 ;; Persist the latest font preset when closing/starting Emacs and
 ;; while switching between themes.
@@ -178,10 +178,7 @@
 (mapc #'disable-theme custom-enabled-themes)
 
 ;; Load the theme of choice:
-(load-theme 'ef-summer :no-confirm)
-
-;; OR use this to load the theme which also calls `ef-themes-post-load-hook':
-(ef-themes-select 'ef-day)
+(load-theme 'ef-day :no-confirm)
 
 ;; The themes we provide are recorded in the `ef-themes-dark-themes',
 ;; `ef-themes-light-themes'.
@@ -197,10 +194,10 @@
 ;; - `ef-themes-preview-colors-current'
 
 (defun my/org-mode-setup ()
-  (org-indent-mode)       ;; prefixes text lines with virtual spaces to vertically
-                          ;; align with the headline text
-  (visual-line-mode 1))   ;; wrap the line at word boundaries near the right window
-                          ;; edge
+  (org-indent-mode)       ; prefixes text lines with virtual spaces to vertically
+                          ; align with the headline text
+  (visual-line-mode 1))   ; wrap the line at word boundaries near the right window
+                          ; edge
 
 (use-package org
   :ensure nil ; don't try to install it as it's built-in
@@ -247,6 +244,8 @@
      (latex . t)
      (python . t)
      (sql . t))))
+
+(setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
 
 (use-package orderless
   :ensure t
