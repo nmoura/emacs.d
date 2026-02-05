@@ -4,16 +4,17 @@
 
 (setq package-list
       '(
-	consult
-	display-line-numbers
-	ef-themes
-	fontaine
+        consult
+        display-line-numbers
+        ef-themes
+        fontaine
         helpful
-	orderless
+        orderless
+        org-drill
         org-super-agenda
-	spacious-padding
-	vertico
-	yascroll
+        spacious-padding
+        vertico
+        yascroll
         zenburn-theme))
 
 ;; Initialize the packaging systems and prepares it to be used
@@ -47,6 +48,8 @@
 
 (defcustom botafogo-agenda (my/path :botafogo "agenda.org")
 "This points to the filesystem path of the Botafogo agenda.org file")
+(defcustom inbox (my/path "inbox.org")
+  "This points to the inbox org file")
 
 ;; Line numbers on the side of the window
 (use-package display-line-numbers
@@ -198,9 +201,8 @@
 
 (defun my/org-mode-setup ()
   (org-indent-mode)       ; prefixes text lines with virtual spaces to vertically
-                          ; align with the headline text
-  (visual-line-mode 1))   ; wrap the line at word boundaries near the right window
-                          ; edge
+				; align with the headline text
+  (visual-line-mode 1))   ; wrap the line at word boundaries near the right window edge
 
 (use-package org
   :ensure nil ; don't try to install it as it's built-in
@@ -213,7 +215,7 @@
   (setq org-ellipsis " ⮧")
 
   (setq org-todo-keywords
-	  '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
+      	'((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
 
   ;;(setq org-agenda-span 'day)
   ;;(setq org-agenda-start-with-log-mode t)
@@ -250,6 +252,18 @@
 
 (setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
 
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline inbox "Tasks")
+      	 "* TODO %?\n  %i\n  %a")
+      	("j" "Journal" entry (file+olp+datetree "~/Documents/org/journal.org")
+      	 "* %?\nEntered on %U\n  %i\n  %a")))
+
+(use-package org-drill
+:straight t
+:config
+(setq org-drill-maximum-items-per-session nil
+      org-drill-spaced-repetition-algorithm 'sm2))
+
 (use-package orderless
   :ensure t
   :config
@@ -284,13 +298,15 @@
 ;; Set a key binding if you need to toggle spacious padding.
 (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
 
-(blink-cursor-mode -1)       ; disable the blinking of the cursor
-(scroll-bar-mode -1)         ; disable the scroll bar
-(recentf-mode 1)             ; remember recently edited files
-(savehist-mode 1)            ; remember minibuffer prompt history
-(save-place-mode 1)          ; remember the last place you visited in a file
-(global-auto-revert-mode 1)  ; automatically revert buffers when the underlying file has changed
-(setq use-dialog-box nil)    ; prevent using UI dialogs for prompts
+(blink-cursor-mode -1)           ; disable the blinking of the cursor
+(scroll-bar-mode -1)             ; disable the scroll bar
+(recentf-mode 1)                 ; remember recently edited files
+(savehist-mode 1)                ; remember minibuffer prompt history
+(save-place-mode 1)              ; remember the last place you visited in a file
+(global-auto-revert-mode 1)      ; automatically revert buffers when the underlying file has changed
+(setq use-dialog-box nil)        ; prevent using UI dialogs for prompts
+(setq require-final-newline nil) ; prevent Emacs from automatcally adding a new line to the end of a file even
+                                 ; when I try to remove it
 
 ;; tell Emacs to write customizable variables on another file
 ;; so that this init.el file don't get polluted
@@ -301,6 +317,14 @@
 ;; bindings following the currently entered incomplete
 ;; command (a prefix) in a popup
 (which-key-mode)
+
+;;(setq gdb-many-windows t) ; unfortunately this config is freezing my Emacs on macOS Tahoe.
+			    ; I'll enable it as soon as I replace my computer to go back to a *nix OS. (try out the gdb-x https://codeberg.org/pastor/gdb-x)
+;;(semantic-mode 0) ;; some people said in the past that disabling the semantic mode prevented the gdb from freezing Emacs, but it didn't help in my case.
+(setq gdb-show-main t)
+(setq gdb-use-separate-frame nil)
+(setq gdb-inferior-tty nil)
+(setq gdb-display-io-nopopup t)
 
 ;; below an example of org-super-agenda from here: https://github.com/ebellani/Emacs.d/blob/master/init.el
 
