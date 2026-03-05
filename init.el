@@ -7,6 +7,7 @@
         consult
         display-line-numbers
         ef-themes
+        elfeed-org
         fontaine
         helpful
         orderless
@@ -29,12 +30,44 @@
   (unless (package-installed-p package)
     (package-install package)))
 
-(setq org-directory "/Users/nmoura/Documents/org")
+(blink-cursor-mode -1)           ; disable the blinking of the cursor
+(scroll-bar-mode -1)             ; disable the scroll bar
+(recentf-mode 1)                 ; remember recently edited files
+(savehist-mode 1)                ; remember minibuffer prompt history
+(save-place-mode 1)              ; remember the last place you visited in a file
+(global-auto-revert-mode 1)      ; automatically revert buffers when the underlying file has changed
+(setq use-dialog-box nil)        ; prevent using UI dialogs for prompts
+(setq require-final-newline nil) ; prevent Emacs from automatcally adding a new line to the end of a file even
+                                 ; when I try to remove it
+
+;; tell Emacs to write customizable variables on another file
+;; so that this init.el file don't get polluted
+(setq custom-file (locate-user-emacs-file "custom-vars.el"))
+(load custom-file 'noerror 'nomessage)
+
+;; enable which-key minor mode, that displays the key
+;; bindings following the currently entered incomplete
+;; command (a prefix) in a popup
+(which-key-mode)
+
+;; disable menu bar if running GUI Emacs
+(if window-system (menu-bar-mode -1))
+
+;; disable tool bar if running GUI Emacs
+(if window-system (tool-bar-mode -1))
+
+;; configure newlines and indentations to use spaces by default
+(setq-default indent-tabs-mode nil)
+
+;; set eww (Emacs Web Wowser) as default browser
+(setq browse-url-browser-function 'eww-browse-url)
+
+(setq org-directory "~/org")
 
 (defcustom my/path-aliases
   (list :emacs    "~/.emacs.d"
         :org      org-directory
-        :botafogo (expand-file-name "botafogo" org-directory)
+        :gtd      (expand-file-name "gtd" org-directory)
         :personal (expand-file-name "personal" org-directory))
   "Location of my paths for ease of usage. Customize for each
               environment if needed.")
@@ -46,10 +79,16 @@
         (subpath (or subpath "")))
     (concat dir subpath)))
 
-(defcustom botafogo-agenda (my/path :botafogo "agenda.org")
-"This points to the filesystem path of the Botafogo agenda.org file")
-(defcustom inbox (my/path "inbox.org")
+(defcustom myinbox (my/path :gtd "inbox.org")
   "This points to the inbox org file")
+(defcustom mypersonal (my/path :gtd "personal.org")
+  "This points to the personal org file")
+(defcustom mywork (my/path :gtd "work.org")
+  "This points to the work org file")
+(defcustom myprojects (my/path :gtd "projects.org")
+  "This points to the projects org file")
+(defcustom myjournal (my/path :gtd "journal.org")
+  "This points to the journal org file")
 
 ;; Line numbers on the side of the window
 (use-package display-line-numbers
@@ -76,11 +115,13 @@
 (setq fontaine-presets
       '((small
          :default-family "Aporetic Serif Mono"
-         :default-height 115
-	 :default-weight semilight
+         :default-height 80
          :variable-pitch-family "Aporetic Sans")
-        (regular
-	 :default-height 130) ; like this it uses all the fallback values and is named `regular'
+        (regular) ; like this it uses all the fallback values and is named `regular'
+        (medium
+         :default-weight semilight
+         :default-height 115
+         :bold-weight extrabold)
         (large
          :inherit medium
          :default-height 150)
@@ -140,7 +181,7 @@
 
 ;; Set the last preset or fall back to desired style from `fontaine-presets'
 ;; (the `regular' in this case).
-(fontaine-set-preset (or (fontaine-restore-latest-preset) 'large))
+(fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
 
 ;; Persist the latest font preset when closing/starting Emacs and
 ;; while switching between themes.
@@ -152,6 +193,8 @@
 ;;     (info "(elisp) Key Binding Conventions")
 (define-key global-map (kbd "C-c f") #'fontaine-set-preset)
 
+;; ref: https://protesilaos.com/emacs/ef-themes-pictures
+
 ;; Make customisations that affect Emacs faces BEFORE loading a theme
 ;; (any change needs a theme re-load to take effect).
 (require 'ef-themes)
@@ -160,7 +203,7 @@
 ;; can specify them in `ef-themes-to-toggle' and then invoke the command
 ;; `ef-themes-toggle'.  All the themes are included in the variable
 ;; `ef-themes-collection'.
-(setq ef-themes-to-toggle '(ef-day ef-maris-dark))
+(setq ef-themes-to-toggle '(ef-melissa-light ef-melissa-dark))
 
 ;; define a keyboard shortcut to toggle between the predefined themes
 (define-key global-map (kbd "C-c t") #'ef-themes-toggle)
@@ -184,7 +227,7 @@
 (mapc #'disable-theme custom-enabled-themes)
 
 ;; Load the theme of choice:
-(load-theme 'ef-day :no-confirm)
+(load-theme 'ef-melissa-light :no-confirm)
 
 ;; The themes we provide are recorded in the `ef-themes-dark-themes',
 ;; `ef-themes-light-themes'.
@@ -198,6 +241,27 @@
 ;; - `ef-themes-load-random'
 ;; - `ef-themes-preview-colors'
 ;; - `ef-themes-preview-colors-current'
+
+;; Load elfeed-org
+(require 'elfeed-org)
+
+;; Initialize elfeed-org
+;; This hooks up elfeed-org to read the configuration when elfeed
+;; is started with =M-x elfeed=
+(elfeed-org)
+
+;; Optionally specify a number of files containing elfeed
+;; configuration. If not set then the location below is used.
+;; Note: The customize interface is also supported.
+(setq rmh-elfeed-org-files (list "~/org/elfeed.org"))
+
+;;(setq gdb-many-windows t) ; unfortunately this config is freezing my Emacs on macOS Tahoe.
+			    ; I'll enable it as soon as I replace my computer to go back to a *nix OS. (try out the gdb-x https://codeberg.org/pastor/gdb-x)
+;;(semantic-mode 0) ;; some people said in the past that disabling the semantic mode prevented the gdb from freezing Emacs, but it didn't help in my case.
+(setq gdb-show-main t)
+(setq gdb-use-separate-frame nil)
+(setq gdb-inferior-tty nil)
+(setq gdb-display-io-nopopup t)
 
 (defun my/org-mode-setup ()
   (org-indent-mode)       ; prefixes text lines with virtual spaces to vertically
@@ -217,11 +281,6 @@
   (setq org-todo-keywords
       	'((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
 
-  ;;(setq org-agenda-span 'day)
-  ;;(setq org-agenda-start-with-log-mode t)
-  ;;(setq org-agenda-skip-scheduled-if-done t)
-  ;;(setq org-agenda-skip-deadline-if-done t)
-  ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
   ;;(setq org-hide-emphasis-markers t)
 
   (set-face-underline 'org-ellipsis nil)
@@ -253,16 +312,61 @@
 (setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
 
 (setq org-capture-templates
-      '(("t" "Todo" entry (file+headline inbox "Tasks")
-      	 "* TODO %?\n  %i\n  %a")
-      	("j" "Journal" entry (file+olp+datetree "~/Documents/org/journal.org")
+      '(("t" "Todo" entry (file+headline myinbox "Inbox")
+      	 "* TODO %?\n")
+      	("j" "Journal" entry (file+olp+datetree myjournal)
       	 "* %?\nEntered on %U\n  %i\n  %a")))
 
+(add-hook 'org-mode-hook (lambda () (setq indent-tabs-mode nil)))
+
 (use-package org-drill
-:straight t
 :config
 (setq org-drill-maximum-items-per-session nil
       org-drill-spaced-repetition-algorithm 'sm2))
+
+;;(setq org-agenda-start-with-log-mode t)
+;;(setq org-agenda-skip-scheduled-if-done t)
+;;(setq org-agenda-skip-deadline-if-done t)
+;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+
+(setq org-agenda-files (list myinbox mypersonal mywork myprojects))
+
+(setq org-refile-targets '((nil :maxlevel . 1)
+                           (mypersonal :maxlevel . 1)
+                           (mywork :maxlevel . 1)
+                           ))
+
+(setq org-archive-location "~/org/gtd/archive.org::* From %s")
+
+(use-package org-super-agenda
+  :config
+  (org-super-agenda-mode 1)
+  (setq org-agenda-span 'day)
+
+  (setq org-agenda-custom-commands
+        '(("u" "Super view"
+           ((agenda "" ((org-super-agenda-groups
+                         '(
+                           (:name "Important"
+                                  :priority>= "B"
+                                  :order 0)
+                           (:name "Personal Habits"
+                                  :and (:file-path "personal" :habit t)
+                                  :order 20)
+                           (:name "Late tasks"
+                                  :deadline past
+                                  :scheduled past
+                                  :order 30)
+                           (:name "Regular for today"
+                                  :time-grid t
+                                  :date today
+                                  :deadline  today
+                                  :scheduled today
+                                  :order 40)
+                           (:name "Future"
+                                  :scheduled future
+                                  :order 50)
+                           )))))))))
 
 (use-package orderless
   :ensure t
@@ -298,71 +402,7 @@
 ;; Set a key binding if you need to toggle spacious padding.
 (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
 
-(blink-cursor-mode -1)           ; disable the blinking of the cursor
-(scroll-bar-mode -1)             ; disable the scroll bar
-(recentf-mode 1)                 ; remember recently edited files
-(savehist-mode 1)                ; remember minibuffer prompt history
-(save-place-mode 1)              ; remember the last place you visited in a file
-(global-auto-revert-mode 1)      ; automatically revert buffers when the underlying file has changed
-(setq use-dialog-box nil)        ; prevent using UI dialogs for prompts
-(setq require-final-newline nil) ; prevent Emacs from automatcally adding a new line to the end of a file even
-                                 ; when I try to remove it
-
-;; tell Emacs to write customizable variables on another file
-;; so that this init.el file don't get polluted
-(setq custom-file (locate-user-emacs-file "custom-vars.el"))
-(load custom-file 'noerror 'nomessage)
-
-;; enable which-key minor mode, that displays the key
-;; bindings following the currently entered incomplete
-;; command (a prefix) in a popup
-(which-key-mode)
-
-;;(setq gdb-many-windows t) ; unfortunately this config is freezing my Emacs on macOS Tahoe.
-			    ; I'll enable it as soon as I replace my computer to go back to a *nix OS. (try out the gdb-x https://codeberg.org/pastor/gdb-x)
-;;(semantic-mode 0) ;; some people said in the past that disabling the semantic mode prevented the gdb from freezing Emacs, but it didn't help in my case.
-(setq gdb-show-main t)
-(setq gdb-use-separate-frame nil)
-(setq gdb-inferior-tty nil)
-(setq gdb-display-io-nopopup t)
-
-;; below an example of org-super-agenda from here: https://github.com/ebellani/Emacs.d/blob/master/init.el
-
-   (use-package org-super-agenda
-     :config
-     (org-super-agenda-mode 1)
-     (setq
-      org-agenda-custom-commands
-      '(("u" "Super view"
-         ((agenda "" ((org-super-agenda-groups
-                       '((:name "Work Habits"
-                                :and (:file-path "work" :habit t)
-                                :and (:file-path "data-risk" :habit t)
-                                :order 20)
-                         (:name "Personal Habits"
-                                :and (:file-path "personal" :habit t)
-                                :order 22)
-                         (:name "Work day notification"
-                                :property "work_reminder"
-                                :order 25)
-                         (:name "Important"
-                                :priority>= "B"
-                                :order 0)
-                         (:name "Late tasks"
-                                :deadline past
-                                :scheduled past
-                                :order 10)
-                         (:name "Regular for today"
-                                :time-grid t
-                                :date today
-                                :deadline  today
-                                :scheduled today
-                                :order 30))))))
-         ;; ((org-overriding-columns-format "%WSJF %ITEM %bv %tc %rr-oe %eff %ALLTAGS"))
-         ))))
-
-;; starts Emacs presenting the super agenda view
-  (add-hook 'emacs-startup-hook
+(add-hook 'emacs-startup-hook
             (lambda ()
               ;; Open your Org Super Agenda view
               (org-agenda nil "u")
