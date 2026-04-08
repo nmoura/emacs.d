@@ -89,6 +89,8 @@
   "This points to the projects org file")
 (defcustom myjournal (my/path :gtd "journal.org")
   "This points to the journal org file")
+(defcustom mymasters (my/path :gtd "masters.org")
+  "This points to the masters org file")
 
 ;; Line numbers on the side of the window
 (use-package display-line-numbers
@@ -265,7 +267,7 @@
 
 (defun my/org-mode-setup ()
   (org-indent-mode)       ; prefixes text lines with virtual spaces to vertically
-				; align with the headline text
+                          ; align with the headline text
   (visual-line-mode 1))   ; wrap the line at word boundaries near the right window edge
 
 (use-package org
@@ -279,7 +281,7 @@
   (setq org-ellipsis " ⮧")
 
   (setq org-todo-keywords
-      	'((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
+        '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
 
   ;;(setq org-hide-emphasis-markers t)
 
@@ -313,9 +315,11 @@
 
 (setq org-capture-templates
       '(("t" "Todo" entry (file+headline myinbox "Inbox")
-      	 "* TODO %?\n")
-      	("j" "Journal" entry (file+olp+datetree myjournal)
-      	 "* %?\nEntered on %U\n  %i\n  %a")))
+         "* TODO %?\n")
+        ("m" "Master's Todo" entry (file+headline mymasters "Masters Inbox")
+         "* TODO %?\n")
+        ("j" "Journal" entry (file+olp+datetree myjournal)
+         "* %?\nEntered on %U\n  %i\n  %a")))
 
 (add-hook 'org-mode-hook (lambda () (setq indent-tabs-mode nil)))
 
@@ -329,7 +333,7 @@
 ;;(setq org-agenda-skip-deadline-if-done t)
 ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
 
-(setq org-agenda-files (list myinbox mypersonal mywork myprojects))
+(setq org-agenda-files (list myinbox mypersonal mywork myprojects mymasters))
 
 (setq org-refile-targets '((nil :maxlevel . 1)
                            (mypersonal :maxlevel . 1)
