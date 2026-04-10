@@ -257,9 +257,7 @@
 ;; Note: The customize interface is also supported.
 (setq rmh-elfeed-org-files (list "~/org/elfeed.org"))
 
-;;(setq gdb-many-windows t) ; unfortunately this config is freezing my Emacs on macOS Tahoe.
-			    ; I'll enable it as soon as I replace my computer to go back to a *nix OS. (try out the gdb-x https://codeberg.org/pastor/gdb-x)
-;;(semantic-mode 0) ;; some people said in the past that disabling the semantic mode prevented the gdb from freezing Emacs, but it didn't help in my case.
+(setq gdb-many-windows t)
 (setq gdb-show-main t)
 (setq gdb-use-separate-frame nil)
 (setq gdb-inferior-tty nil)
