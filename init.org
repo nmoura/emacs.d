@@ -7,101 +7,99 @@
 It has optimizations for the Emacs startup such as inhibiting startup screen or disabling the bell ring
 
 #+begin_src emacs-lisp :tangle early-init.el
-  (setq inhibit-splash-screen t
-        inhibit-startup-buffer-menu t
-        inhibit-startup-message t
-        inhibit-startup-screen t
-        inhibit-x-resources t
-        initial-buffer-choice nil
-        ring-bell-function 'ignore
-        use-file-dialog t
-        use-short-answers t)
+(setq inhibit-splash-screen t
+      inhibit-startup-buffer-menu t
+      inhibit-startup-message t
+      inhibit-startup-screen t
+      inhibit-x-resources t
+      initial-buffer-choice nil
+      ring-bell-function 'ignore
+      use-file-dialog t
+      use-short-answers t)
 
-  (add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
 #+end_src
-
 
 * Packages' installation
 
 ~package-list~ is a list of packages to be installed. This snippet tells Emacs to install the packages that are not installed.
 
 #+begin_src emacs-lisp
-  (require 'package)
+(require 'package)
 
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-  (setq package-list
-        '(
-          consult
-          display-line-numbers
-          ef-themes
-          elfeed-org
-          fontaine
-          helpful
-          orderless
-          org-drill
-          org-super-agenda
-          spacious-padding
-          vertico
-          yascroll
-          zenburn-theme))
+(setq package-list
+      '(
+        consult
+        display-line-numbers
+        ef-themes
+        elfeed-org
+        fontaine
+        helpful
+        orderless
+        org-drill
+        org-super-agenda
+        spacious-padding
+        vertico
+        yascroll
+        zenburn-theme))
 
-  ;; Initialize the packaging systems and prepares it to be used
-  (package-initialize)
+;; Initialize the packaging systems and prepares it to be used
+(package-initialize)
 
-  ;; Fetch the list of available packages in the case it does not exist locally
-  (unless package-archive-contents
-    (package-refresh-contents))
+;; Fetch the list of available packages in the case it does not exist locally
+(unless package-archive-contents
+  (package-refresh-contents))
 
-  ;; Try to install the packages within the package-list variable previously set
-  (dolist (package package-list)
-    (unless (package-installed-p package)
-      (package-install package)))
+;; Try to install the packages within the package-list variable previously set
+(dolist (package package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
 #+end_src
 
 
-* Miscellaneous configuration
+* Miscellaneous "vanilla" Emacs configuration
 
 #+begin_src emacs-lisp
+(blink-cursor-mode -1)           ; disable the blinking of the cursor
+(scroll-bar-mode -1)             ; disable the scroll bar
+(recentf-mode 1)                 ; remember recently edited files
+(savehist-mode 1)                ; remember minibuffer prompt history
+(save-place-mode 1)              ; remember the last place you visited in a file
+(global-auto-revert-mode 1)      ; automatically revert buffers when the underlying file has changed
+(setq use-dialog-box nil)        ; prevent using UI dialogs for prompts
+(setq require-final-newline nil) ; prevent Emacs from automatcally adding a new line to the end of a file even
+                                 ; when I try to remove it
 
-  (blink-cursor-mode -1)           ; disable the blinking of the cursor
-  (scroll-bar-mode -1)             ; disable the scroll bar
-  (recentf-mode 1)                 ; remember recently edited files
-  (savehist-mode 1)                ; remember minibuffer prompt history
-  (save-place-mode 1)              ; remember the last place you visited in a file
-  (global-auto-revert-mode 1)      ; automatically revert buffers when the underlying file has changed
-  (setq use-dialog-box nil)        ; prevent using UI dialogs for prompts
-  (setq require-final-newline nil) ; prevent Emacs from automatcally adding a new line to the end of a file even
-                                   ; when I try to remove it
+;; tell Emacs to write customizable variables on another file
+;; so that this init.el file don't get polluted
+(setq custom-file (locate-user-emacs-file "custom-vars.el"))
+(load custom-file 'noerror 'nomessage)
 
-  ;; tell Emacs to write customizable variables on another file
-  ;; so that this init.el file don't get polluted
-  (setq custom-file (locate-user-emacs-file "custom-vars.el"))
-  (load custom-file 'noerror 'nomessage)
+;; enable which-key minor mode, that displays the key
+;; bindings following the currently entered incomplete
+;; command (a prefix) in a popup
+(which-key-mode)
 
-  ;; enable which-key minor mode, that displays the key
-  ;; bindings following the currently entered incomplete
-  ;; command (a prefix) in a popup
-  (which-key-mode)
+;; disable menu bar if running GUI Emacs
+(if window-system (menu-bar-mode -1))
 
-  ;; disable menu bar if running GUI Emacs
-  (if window-system (menu-bar-mode -1))
+;; disable tool bar if running GUI Emacs
+(if window-system (tool-bar-mode -1))
 
-  ;; disable tool bar if running GUI Emacs
-  (if window-system (tool-bar-mode -1))
+;; configure newlines and indentations to use spaces by default
+(setq-default indent-tabs-mode nil)
 
-  ;; configure newlines and indentations to use spaces by default
-  (setq-default indent-tabs-mode nil)
-
-  ;; set eww (Emacs Web Wowser) as default browser
-  (setq browse-url-browser-function 'eww-browse-url)
+;; set eww (Emacs Web Wowser) as default browser
+(setq browse-url-browser-function 'eww-browse-url)
 #+end_src
 
 
 * Define custom variables, helpers etc.
 
 #+begin_src emacs-lisp
-  (setq org-directory "~/org")
+(setq org-directory "~/org")
 #+end_src
 
 ** my/path-aliases
@@ -111,13 +109,13 @@ This was taken from Eduardo Bellani's Emacs.d repository at https://github.com/e
 It creates a list of aliase paths for ease of usage. They are first used by the my/path function, which in turn can be used elsewhere.
 
 #+begin_src emacs-lisp
-  (defcustom my/path-aliases
-    (list :emacs    "~/.emacs.d"
-          :org      org-directory
-          :gtd      (expand-file-name "gtd" org-directory)
-          :personal (expand-file-name "personal" org-directory))
-    "Location of my paths for ease of usage. Customize for each
-                environment if needed.")
+(defcustom my/path-aliases
+  (list :emacs    "~/.emacs.d"
+        :org      org-directory
+        :gtd      (expand-file-name "gtd" org-directory)
+        :personal (expand-file-name "personal" org-directory))
+  "Location of my paths for ease of usage. Customize for each
+              environment if needed.")
 #+end_src
 
 ** my/path
@@ -127,27 +125,27 @@ This was also taken from Eduardo Bellani's Emacs.d repository at https://github.
 The ~my/path~ function can be used elsewhere to easily reference to pre-defined paths. See an example of usage below the function definition.
 
 #+begin_src emacs-lisp
-  (defun my/path (dir &optional subpath)
-    (let ((dir (file-name-as-directory
-                (cl-getf my/path-aliases dir
-                         (format "~/%s" dir))))
-          (subpath (or subpath "")))
-      (concat dir subpath)))
+(defun my/path (dir &optional subpath)
+  (let ((dir (file-name-as-directory
+              (cl-getf my/path-aliases dir
+                       (format "~/%s" dir))))
+        (subpath (or subpath "")))
+    (concat dir subpath)))
 #+end_src
 
 #+begin_src emacs-lisp
-  (defcustom myinbox (my/path :gtd "inbox.org")
-    "This points to the inbox org file")
-  (defcustom mypersonal (my/path :gtd "personal.org")
-    "This points to the personal org file")
-  (defcustom mywork (my/path :gtd "work.org")
-    "This points to the work org file")
-  (defcustom myprojects (my/path :gtd "projects.org")
-    "This points to the projects org file")
-  (defcustom myjournal (my/path :gtd "journal.org")
-    "This points to the journal org file")
-  (defcustom mymasters (my/path :gtd "masters.org")
-    "This points to the masters org file")
+(defcustom myinbox (my/path :gtd "inbox.org")
+  "This points to the inbox org file")
+(defcustom mypersonal (my/path :gtd "personal.org")
+  "This points to the personal org file")
+(defcustom mywork (my/path :gtd "work.org")
+  "This points to the work org file")
+(defcustom myprojects (my/path :gtd "projects.org")
+  "This points to the projects org file")
+(defcustom myjournal (my/path :gtd "journal.org")
+  "This points to the journal org file")
+(defcustom mymasters (my/path :gtd "masters.org")
+  "This points to the masters org file")
 #+end_src
 
 
@@ -157,18 +155,18 @@ The ~my/path~ function can be used elsewhere to easily reference to pre-defined 
 It binds the <f7> key to the display-line-numbers-mode so that the lines on the side of the screen show/hide.
 
 #+begin_src emacs-lisp
-  ;; Line numbers on the side of the window
-  (use-package display-line-numbers
-    :ensure nil
-    :bind
-    ("<f7>" . display-line-numbers-mode)
-    :config
-    (setq-default display-line-numbers-type t)
-    ;; Those two variables were introduced in Emacs 27.1
-    (setq display-line-numbers-major-tick 0)
-    (setq display-line-numbers-minor-tick 0)
-    ;; Use absolute numbers in narrowed buffers
-    (setq-default display-line-numbers-widen t))
+;; Line numbers on the side of the window
+(use-package display-line-numbers
+  :ensure nil
+  :bind
+  ("<f7>" . display-line-numbers-mode)
+  :config
+  (setq-default display-line-numbers-type t)
+  ;; Those two variables were introduced in Emacs 27.1
+  (setq display-line-numbers-major-tick 0)
+  (setq display-line-numbers-minor-tick 0)
+  ;; Use absolute numbers in narrowed buffers
+  (setq-default display-line-numbers-widen t))
 #+end_src
 
 ** yascroll - yet another scroll
@@ -176,7 +174,7 @@ It binds the <f7> key to the display-line-numbers-mode so that the lines on the 
 Enable the yascroll globally.
 
 #+begin_src emacs-lisp
-  (global-yascroll-bar-mode 1)
+(global-yascroll-bar-mode 1)
 #+end_src
 
 ** fontaine - a font presets package
@@ -271,61 +269,66 @@ Enable the yascroll globally.
 (define-key global-map (kbd "C-c f") #'fontaine-set-preset)
 #+end_src
 
-#+RESULTS:
-: fontaine-set-preset
-
 ** ef-themes - a package with beautiful themes
 
 #+begin_src emacs-lisp
+;; ref: https://protesilaos.com/emacs/ef-themes-pictures
 
-  ;; ref: https://protesilaos.com/emacs/ef-themes-pictures
+;; Make customisations that affect Emacs faces BEFORE loading a theme
+;; (any change needs a theme re-load to take effect).
+(require 'ef-themes)
 
-  ;; Make customisations that affect Emacs faces BEFORE loading a theme
-  ;; (any change needs a theme re-load to take effect).
-  (require 'ef-themes)
+;; If you like two specific themes and want to switch between them, you
+;; can specify them in `ef-themes-to-toggle' and then invoke the command
+;; `ef-themes-toggle'.  All the themes are included in the variable
+;; `ef-themes-collection'.
+(setq ef-themes-to-toggle '(ef-melissa-light ef-melissa-dark))
 
-  ;; If you like two specific themes and want to switch between them, you
-  ;; can specify them in `ef-themes-to-toggle' and then invoke the command
-  ;; `ef-themes-toggle'.  All the themes are included in the variable
-  ;; `ef-themes-collection'.
-  (setq ef-themes-to-toggle '(ef-melissa-light ef-melissa-dark))
+;; define a keyboard shortcut to toggle between the predefined themes
+(define-key global-map (kbd "C-c t") #'ef-themes-toggle)
 
-  ;; define a keyboard shortcut to toggle between the predefined themes
-  (define-key global-map (kbd "C-c t") #'ef-themes-toggle)
+(setq ef-themes-headings ; read the manual's entry or the doc string
+      '((0 variable-pitch light 1.9)
+        (1 variable-pitch light 1.8)
+        (2 variable-pitch regular 1.7)
+        (3 variable-pitch regular 1.6)
+        (4 variable-pitch regular 1.5)
+        (5 variable-pitch 1.4) ; absence of weight means `bold'
+        (6 variable-pitch 1.3)
+        (7 variable-pitch 1.2)
+        (t variable-pitch 1.1)))
 
-  (setq ef-themes-headings ; read the manual's entry or the doc string
-        '((0 variable-pitch light 1.9)
-          (1 variable-pitch light 1.8)
-          (2 variable-pitch regular 1.7)
-          (3 variable-pitch regular 1.6)
-          (4 variable-pitch regular 1.5)
-          (5 variable-pitch 1.4) ; absence of weight means `bold'
-          (6 variable-pitch 1.3)
-          (7 variable-pitch 1.2)
-          (t variable-pitch 1.1)))
+;; They are nil by default...
+(setq ef-themes-mixed-fonts t
+      ef-themes-variable-pitch-ui t)
 
-  ;; They are nil by default...
-  (setq ef-themes-mixed-fonts t
-        ef-themes-variable-pitch-ui t)
+;; Disable all other themes to avoid awkward blending:
+(mapc #'disable-theme custom-enabled-themes)
 
-  ;; Disable all other themes to avoid awkward blending:
-  (mapc #'disable-theme custom-enabled-themes)
+;; Load the theme of choice:
+(load-theme 'ef-melissa-light :no-confirm)
 
-  ;; Load the theme of choice:
-  (load-theme 'ef-melissa-light :no-confirm)
+;; The themes we provide are recorded in the `ef-themes-dark-themes',
+;; `ef-themes-light-themes'.
 
-  ;; The themes we provide are recorded in the `ef-themes-dark-themes',
-  ;; `ef-themes-light-themes'.
+;; We also provide these commands, but do not assign them to any key:
+;;
+;; - `ef-themes-toggle'
+;; - `ef-themes-select'
+;; - `ef-themes-select-dark'
+;; - `ef-themes-select-light'
+;; - `ef-themes-load-random'
+;; - `ef-themes-preview-colors'
+;; - `ef-themes-preview-colors-current'
+#+end_src
 
-  ;; We also provide these commands, but do not assign them to any key:
-  ;;
-  ;; - `ef-themes-toggle'
-  ;; - `ef-themes-select'
-  ;; - `ef-themes-select-dark'
-  ;; - `ef-themes-select-light'
-  ;; - `ef-themes-load-random'
-  ;; - `ef-themes-preview-colors'
-  ;; - `ef-themes-preview-colors-current'
+** eglot - a client for LSP servers
+
+#+begin_src emacs-lisp
+(require 'eglot)
+(add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+(add-hook 'c-mode-hook 'eglot-ensure)
+(add-hook 'c++-mode-hook 'eglot-ensure)
 #+end_src
 
 ** elfeed-org - Elfeed RSS reader with an Orgmode file
@@ -348,11 +351,11 @@ Enable the yascroll globally.
 ** gdb - GNU Debugger
 
 #+begin_src emacs-lisp
-  (setq gdb-many-windows t)
-  (setq gdb-show-main t)
-  (setq gdb-use-separate-frame nil)
-  (setq gdb-inferior-tty nil)
-  (setq gdb-display-io-nopopup t)
+(setq gdb-many-windows t)
+(setq gdb-show-main t)
+(setq gdb-use-separate-frame nil)
+(setq gdb-inferior-tty nil)
+(setq gdb-display-io-nopopup t)
 #+end_src
 
 ** gdb-x - improve GDB-MI user interface
@@ -362,68 +365,69 @@ I want to try this. Need to replace my notebook with another one to run *nix. ht
 ** org - the plain text system major mode
 
 #+begin_src emacs-lisp
-  (defun my/org-mode-setup ()
-    (org-indent-mode)       ; prefixes text lines with virtual spaces to vertically
-                            ; align with the headline text
-    (visual-line-mode 1))   ; wrap the line at word boundaries near the right window edge
+(defun my/org-mode-setup ()
+  (org-indent-mode)       ; prefixes text lines with virtual spaces to vertically
+                          ; align with the headline text
+  (visual-line-mode 1))   ; wrap the line at word boundaries near the right window edge
 
-  (use-package org
-    :ensure nil ; don't try to install it as it's built-in
-    :hook (org-mode . my/org-mode-setup)
-    :config
-    (setq org-M-RET-may-split-line '((default . nil)))
-    (setq org-insert-heading-respect-content t)
-    (setq org-log-done 'time)
-    (setq org-log-into-drawer t)
-    (setq org-ellipsis " ⮧")
+(use-package org
+  :ensure nil ; don't try to install it as it's built-in
+  :hook (org-mode . my/org-mode-setup)
+  :config
+  (setq org-M-RET-may-split-line '((default . nil)))
+  (setq org-insert-heading-respect-content t)
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
+  (setq org-ellipsis " ⮧")
+  (setq org-src-preserve-indentation t)     ; here and next line: preserve indentation
+  (setq org-edit-src-content-indentation 0) ; on org tangled files
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
 
-    (setq org-todo-keywords
-          '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
+  ;;(setq org-hide-emphasis-markers t)
 
-    ;;(setq org-hide-emphasis-markers t)
+  (set-face-underline 'org-ellipsis nil)
 
-    (set-face-underline 'org-ellipsis nil)
+  (global-set-key (kbd "C-c l") #'org-store-link)
+  (global-set-key (kbd "C-c a") #'org-agenda)
+  (global-set-key (kbd "C-c c") #'org-capture)
 
-    (global-set-key (kbd "C-c l") #'org-store-link)
-    (global-set-key (kbd "C-c a") #'org-agenda)
-    (global-set-key (kbd "C-c c") #'org-capture)
+  ;; Note that the built-in `describe-function' includes both functions
+  ;; and macros. `helpful-function' is functions only, so we provide
+  ;; `helpful-callable' as a drop-in replacement.
+  (global-set-key (kbd "C-h f") #'helpful-callable)
 
-    ;; Note that the built-in `describe-function' includes both functions
-    ;; and macros. `helpful-function' is functions only, so we provide
-    ;; `helpful-callable' as a drop-in replacement.
-    (global-set-key (kbd "C-h f") #'helpful-callable)
+  (global-set-key (kbd "C-h v") #'helpful-variable)
+  (global-set-key (kbd "C-h k") #'helpful-key)
+  (global-set-key (kbd "C-h x") #'helpful-command)
 
-    (global-set-key (kbd "C-h v") #'helpful-variable)
-    (global-set-key (kbd "C-h k") #'helpful-key)
-    (global-set-key (kbd "C-h x") #'helpful-command)
+  ;; Lookup the current symbol at point. C-c C-d is a common keybinding
+  ;; for this in lisp modes.
+  (global-set-key (kbd "C-c C-d") #'helpful-at-point)
 
-    ;; Lookup the current symbol at point. C-c C-d is a common keybinding
-    ;; for this in lisp modes.
-    (global-set-key (kbd "C-c C-d") #'helpful-at-point)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((eshell . t)
+     (latex . t)
+     (python . t)
+     (sql . t))))
 
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((eshell . t)
-       (latex . t)
-       (python . t)
-       (sql . t))))
+(setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
 
-  (setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline myinbox "Inbox")
+         "* TODO %?\n")
+        ("m" "Master's Todo" entry (file+headline mymasters "Masters Inbox")
+         "* TODO %?\n")
+        ("j" "Journal" entry (file+olp+datetree myjournal)
+         "* %?\nEntered on %U\n  %i\n  %a")))
 
-  (setq org-capture-templates
-        '(("t" "Todo" entry (file+headline myinbox "Inbox")
-           "* TODO %?\n")
-          ("m" "Master's Todo" entry (file+headline mymasters "Masters Inbox")
-           "* TODO %?\n")
-          ("j" "Journal" entry (file+olp+datetree myjournal)
-           "* %?\nEntered on %U\n  %i\n  %a")))
-
-  (add-hook 'org-mode-hook (lambda () (setq indent-tabs-mode nil)))
+(add-hook 'org-mode-hook (lambda () (setq indent-tabs-mode nil)))
 #+end_src
 
 ** org-drill - flashcards and spaced repetition for org-mode
 #+begin_src emacs-lisp
-  (use-package org-drill
+(use-package org-drill
   :config
   (setq org-drill-maximum-items-per-session nil
         org-drill-spaced-repetition-algorithm 'sm2))
@@ -434,57 +438,58 @@ I want to try this. Need to replace my notebook with another one to run *nix. ht
 Some org configuration like org-agenda-files and org-refile-targets are configured here because it make sense.
 
 #+begin_src emacs-lisp
-  ;;(setq org-agenda-start-with-log-mode t)
-  ;;(setq org-agenda-skip-scheduled-if-done t)
-  ;;(setq org-agenda-skip-deadline-if-done t)
-  ;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
+;;(setq org-agenda-start-with-log-mode t)
+;;(setq org-agenda-skip-scheduled-if-done t)
+;;(setq org-agenda-skip-deadline-if-done t)
+;;(setq org-agenda-skip-scheduled-if-deadline-is-shown t)
 
-  (setq org-agenda-files (list myinbox mypersonal mywork myprojects mymasters))
+(setq org-agenda-files (list myinbox mypersonal mywork myprojects mymasters))
 
-  (setq org-refile-targets '((nil :maxlevel . 1)
-                             (mypersonal :maxlevel . 1)
-                             (mywork :maxlevel . 1)
-                             ))
+(setq org-refile-targets '((nil :maxlevel . 1)
+                           (mypersonal :maxlevel . 1)
+                           (mywork :maxlevel . 1)
+                           ))
 
-  (setq org-archive-location "~/org/gtd/archive.org::* From %s")
+(setq org-archive-location "~/org/gtd/archive.org::* From %s")
 
-  (use-package org-super-agenda
-    :config
-    (org-super-agenda-mode 1)
-    (setq org-agenda-span 'day)
+(use-package org-super-agenda
+  :config
+  (org-super-agenda-mode 1)
+  (setq org-agenda-span 'day)
+  (setq org-habit-show-habits-only-for-today t)
 
-    (setq org-agenda-custom-commands
-          '(("u" "Super view"
-             ((agenda "" ((org-super-agenda-groups
-                           '(
-                             (:name "Important"
-                                    :priority>= "B"
-                                    :order 0)
-                             (:name "Personal Habits"
-                                    :and (:file-path "personal" :habit t)
-                                    :order 20)
-                             (:name "Late tasks"
-                                    :deadline past
-                                    :scheduled past
-                                    :order 30)
-                             (:name "Regular for today"
-                                    :time-grid t
-                                    :date today
-                                    :deadline  today
-                                    :scheduled today
-                                    :order 40)
-                             (:name "Future"
-                                    :scheduled future
-                                    :order 50)
-                             )))))))))
+  (setq org-agenda-custom-commands
+        '(("u" "Super view"
+           ((agenda "" ((org-super-agenda-groups
+                         '(
+                           (:name "Important"
+                                  :priority>= "B"
+                                  :order 0)
+                           (:name "Personal Habits"
+                                  :and (:file-path "personal" :habit t)
+                                  :order 20)
+                           (:name "Late tasks"
+                                  :deadline past
+                                  :scheduled past
+                                  :order 30)
+                           (:name "Regular for today"
+                                  :time-grid t
+                                  :date today
+                                  :deadline  today
+                                  :scheduled today
+                                  :order 40)
+                           (:name "Future"
+                                  :scheduled future
+                                  :order 50)
+                           )))))))))
 #+end_src
 ** orderless - out-of-order pattern matching for the minibuffer
 
 #+begin_src emacs-lisp
-  (use-package orderless
-    :ensure t
-    :config
-    (setq completion-styles '(orderless basic)))
+(use-package orderless
+  :ensure t
+  :config
+  (setq completion-styles '(orderless basic)))
 #+end_src
 
 ** vertico - VERTical Interactive COmpletion
@@ -492,7 +497,7 @@ Some org configuration like org-agenda-files and org-refile-targets are configur
 This is a performant and minimalistic vertical completion UI based on the default completion system.
 
 #+begin_src emacs-lisp
-  (vertico-mode)
+(vertico-mode)
 #+end_src
 
 ** spacious-padding - increase the padding/spacing of Emacs frames and windows
@@ -500,32 +505,32 @@ This is a performant and minimalistic vertical completion UI based on the defaul
 It let the environment beautier and comfortable.
 
 #+begin_src emacs-lisp
-  (require 'spacious-padding)
+(require 'spacious-padding)
 
-  ;; These are the default values, but I keep them here for visibility.
-  (setq spacious-padding-widths
-        '( :internal-border-width 15
-           :header-line-width 4
-           :mode-line-width 6
-           :tab-width 4
-           :right-divider-width 30
-           :scroll-bar-width 8
-           :fringe-width 8))
+;; These are the default values, but I keep them here for visibility.
+(setq spacious-padding-widths
+      '( :internal-border-width 15
+         :header-line-width 4
+         :mode-line-width 6
+         :tab-width 4
+         :right-divider-width 30
+         :scroll-bar-width 8
+         :fringe-width 8))
 
-  ;; Read the doc string of `spacious-padding-subtle-mode-line' as it
-  ;; is very flexible and provides several examples.
-  (setq spacious-padding-subtle-frame-lines
-        `( :mode-line-active 'default
-           :mode-line-inactive vertical-border))
+;; Read the doc string of `spacious-padding-subtle-mode-line' as it
+;; is very flexible and provides several examples.
+(setq spacious-padding-subtle-frame-lines
+      `( :mode-line-active 'default
+         :mode-line-inactive vertical-border))
 
-  ;; Make the underlines appear below the base line, to create a more
-  ;; consistent effect between overlines and underlines.
-  (setq x-underline-at-descent-line t)
+;; Make the underlines appear below the base line, to create a more
+;; consistent effect between overlines and underlines.
+(setq x-underline-at-descent-line t)
 
-  (spacious-padding-mode 1)
+(spacious-padding-mode 1)
 
-  ;; Set a key binding if you need to toggle spacious padding.
-  (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
+;; Set a key binding if you need to toggle spacious padding.
+(define-key global-map (kbd "<f8>") #'spacious-padding-mode)
 #+end_src
 
 
@@ -533,13 +538,13 @@ It let the environment beautier and comfortable.
 * Finish loading by opening org-super-agenda view and delete other windows
 
 #+begin_src emacs-lisp
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              ;; Open your Org Super Agenda view
-              (org-agenda nil "u")
-              ;; Ensure only one window is open
-              (delete-other-windows)))
-              ;; Bury *scratch* buffer if it exists
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            ;; Open your Org Super Agenda view
+            (org-agenda nil "u")
+            ;; Ensure only one window is open
+            (delete-other-windows)))
+;; Bury *scratch* buffer if it exists
 ;;              (when (get-buffer "*scratch*")
 ;;                (bury-buffer "*scratch*"))))
 #+end_src

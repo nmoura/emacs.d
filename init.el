@@ -244,6 +244,11 @@
 ;; - `ef-themes-preview-colors'
 ;; - `ef-themes-preview-colors-current'
 
+(require 'eglot)
+(add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+(add-hook 'c-mode-hook 'eglot-ensure)
+(add-hook 'c++-mode-hook 'eglot-ensure)
+
 ;; Load elfeed-org
 (require 'elfeed-org)
 
@@ -277,7 +282,8 @@
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
   (setq org-ellipsis " ⮧")
-
+  (setq org-src-preserve-indentation t)     ; here and next line: preserve indentation
+  (setq org-edit-src-content-indentation 0) ; on org tangled files
   (setq org-todo-keywords
         '((sequence "TODO(t)" "WAIT(w!)" "|" "CANCEL(c!)" "DONE(d!)")))
 
@@ -322,9 +328,9 @@
 (add-hook 'org-mode-hook (lambda () (setq indent-tabs-mode nil)))
 
 (use-package org-drill
-:config
-(setq org-drill-maximum-items-per-session nil
-      org-drill-spaced-repetition-algorithm 'sm2))
+  :config
+  (setq org-drill-maximum-items-per-session nil
+        org-drill-spaced-repetition-algorithm 'sm2))
 
 ;;(setq org-agenda-start-with-log-mode t)
 ;;(setq org-agenda-skip-scheduled-if-done t)
@@ -344,6 +350,7 @@
   :config
   (org-super-agenda-mode 1)
   (setq org-agenda-span 'day)
+  (setq org-habit-show-habits-only-for-today t)
 
   (setq org-agenda-custom-commands
         '(("u" "Super view"
@@ -405,11 +412,11 @@
 (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
 
 (add-hook 'emacs-startup-hook
-            (lambda ()
-              ;; Open your Org Super Agenda view
-              (org-agenda nil "u")
-              ;; Ensure only one window is open
-              (delete-other-windows)))
-              ;; Bury *scratch* buffer if it exists
+          (lambda ()
+            ;; Open your Org Super Agenda view
+            (org-agenda nil "u")
+            ;; Ensure only one window is open
+            (delete-other-windows)))
+;; Bury *scratch* buffer if it exists
 ;;              (when (get-buffer "*scratch*")
 ;;                (bury-buffer "*scratch*"))))
