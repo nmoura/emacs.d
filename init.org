@@ -39,9 +39,11 @@ It has optimizations for the Emacs startup such as inhibiting startup screen or 
         helpful
         orderless
         org-drill
+        org-roam
         org-super-agenda
         spacious-padding
         vertico
+        vterm
         yascroll
         zenburn-theme))
 

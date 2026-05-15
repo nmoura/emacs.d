@@ -12,9 +12,11 @@
         helpful
         orderless
         org-drill
+        org-roam
         org-super-agenda
         spacious-padding
         vertico
+        vterm
         yascroll
         zenburn-theme))
 
