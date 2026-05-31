@@ -10,6 +10,7 @@
         elfeed-org
         fontaine
         helpful
+        markdown-mode
         orderless
         org-drill
         org-roam
@@ -17,6 +18,7 @@
         spacious-padding
         vertico
         vterm
+        yaml-mode
         yascroll
         zenburn-theme))
 
@@ -315,7 +317,10 @@
    '((eshell . t)
      (latex . t)
      (python . t)
-     (sql . t))))
+     (sql . t)
+     (yaml . t))))
+
+  (add-to-list 'org-src-lang-modes '("yaml" . yaml))
 
 (setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
 

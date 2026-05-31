@@ -37,6 +37,7 @@ It has optimizations for the Emacs startup such as inhibiting startup screen or 
         elfeed-org
         fontaine
         helpful
+        markdown-mode
         orderless
         org-drill
         org-roam
@@ -44,6 +45,7 @@ It has optimizations for the Emacs startup such as inhibiting startup screen or 
         spacious-padding
         vertico
         vterm
+        yaml-mode
         yascroll
         zenburn-theme))
 
@@ -412,7 +414,10 @@ I want to try this. Need to replace my notebook with another one to run *nix. ht
    '((eshell . t)
      (latex . t)
      (python . t)
-     (sql . t))))
+     (sql . t)
+     (yaml . t))))
+
+  (add-to-list 'org-src-lang-modes '("yaml" . yaml))
 
 (setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
 
