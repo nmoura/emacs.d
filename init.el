@@ -4,12 +4,23 @@
 
 (setq package-list
       '(
+        ansible
+        ansible-doc
+        ansible-vault
         consult
         display-line-numbers
         ef-themes
         elfeed-org
         fontaine
+        gptel
+        gptel-agent
+        gptel-aibo
+        gptel-commit
+        gptel-fn-complete
+        gptel-forge-prs
+        gptel-magit
         helpful
+        magit
         markdown-mode
         orderless
         org-drill
@@ -18,7 +29,6 @@
         spacious-padding
         vertico
         vterm
-        yaml-mode
         yascroll
         zenburn-theme))
 
@@ -95,6 +105,21 @@
   "This points to the journal org file")
 (defcustom mymasters (my/path :gtd "masters.org")
   "This points to the masters org file")
+
+(add-to-list 'exec-path (expand-file-name "~/.local/bin"))
+(setenv "PATH" (concat (expand-file-name "~/.local/bin") ":" (getenv "PATH")))
+
+(use-package ansible
+  :hook (yaml-ts-mode . ansible))
+
+(use-package ansible-doc                               ; unmantained since 2016, need to test
+  :hook (ansible . ansible-doc-mode)
+  :bind (:map ansible-doc-mode-map
+              ("C-c ?" . ansible-doc)))
+
+;(use-package ansible-vault
+;  :config
+;  (setq ansible-vault-password-file "~/.vault_pass"))  ; or point to a script
 
 ;; Line numbers on the side of the window
 (use-package display-line-numbers
@@ -249,9 +274,21 @@
 ;; - `ef-themes-preview-colors-current'
 
 (require 'eglot)
-(add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+
+;; Server programs
+(add-to-list 'eglot-server-programs '((c++-mode c-mode) . ("clangd")))
+(add-to-list 'eglot-server-programs '((yaml-mode yaml-ts-mode) . ("ansible-language-server" "--stdio")))
+(add-to-list 'eglot-server-programs '((python-mode python-ts-mode) . ("basedpyright-langserver" "--stdio")))
+
+;; Suppress ALS capability registration warning - https://github.com/microsoft/vscode-languageserver-node/issues/713
+;; not working
+;; (add-to-list 'eglot-ignored-server-capabilities "workspace/didChangeConfiguration")
+
+;; Hooks
 (add-hook 'c-mode-hook 'eglot-ensure)
 (add-hook 'c++-mode-hook 'eglot-ensure)
+(add-hook 'yaml-ts-mode-hook 'eglot-ensure)
+(add-hook 'python-ts-mode-hook 'eglot-ensure)
 
 ;; Load elfeed-org
 (require 'elfeed-org)
@@ -317,10 +354,7 @@
    '((eshell . t)
      (latex . t)
      (python . t)
-     (sql . t)
-     (yaml . t))))
-
-  (add-to-list 'org-src-lang-modes '("yaml" . yaml))
+     (sql . t))))
 
 (setq org-confirm-babel-evaluate nil) ; remove the need for confirmation when evaluating code with Babel
 
@@ -417,6 +451,14 @@
 
 ;; Set a key binding if you need to toggle spacious padding.
 (define-key global-map (kbd "<f8>") #'spacious-padding-mode)
+
+(use-package yaml-ts-mode
+  :mode ("\\.ya?ml\\'" . yaml-ts-mode))
+
+(setq-default eglot-workspace-configuration
+              '(:ansible
+                (:ansibleLint (:enabled t)
+                 :python (:interpreterPath "/home/nilton/.local/share/pipx/venvs/ansible-dev-tools/bin/python"))))
 
 (add-hook 'emacs-startup-hook
           (lambda ()
