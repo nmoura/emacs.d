@@ -8,17 +8,12 @@
         ansible-doc
         ansible-vault
         consult
+        corfu
         display-line-numbers
         ef-themes
         elfeed-org
         fontaine
         gptel
-        gptel-agent
-        gptel-aibo
-        gptel-commit
-        gptel-fn-complete
-        gptel-forge-prs
-        gptel-magit
         helpful
         magit
         markdown-mode
@@ -120,6 +115,19 @@
 ;(use-package ansible-vault
 ;  :config
 ;  (setq ansible-vault-password-file "~/.vault_pass"))  ; or point to a script
+
+(use-package corfu
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  :hook
+  (prog-mode . corfu-mode)
+  (yaml-ts-mode . corfu-mode)
+  :init
+  ;; do NOT call global-corfu-mode
+  )
 
 ;; Line numbers on the side of the window
 (use-package display-line-numbers

@@ -35,17 +35,12 @@ It has optimizations for the Emacs startup such as inhibiting startup screen or 
         ansible-doc
         ansible-vault
         consult
+        corfu
         display-line-numbers
         ef-themes
         elfeed-org
         fontaine
         gptel
-        gptel-agent
-        gptel-aibo
-        gptel-commit
-        gptel-fn-complete
-        gptel-forge-prs
-        gptel-magit
         helpful
         magit
         markdown-mode
@@ -107,6 +102,7 @@ It has optimizations for the Emacs startup such as inhibiting startup screen or 
 
 ;; set eww (Emacs Web Wowser) as default browser
 (setq browse-url-browser-function 'eww-browse-url)
+
 #+end_src
 
 
@@ -184,6 +180,21 @@ The ~my/path~ function can be used elsewhere to easily reference to pre-defined 
 ;  (setq ansible-vault-password-file "~/.vault_pass"))  ; or point to a script
 #+end_src
 
+** corfu - COmpletion in Region FUnction
+#+begin_src emacs-lisp
+(use-package corfu
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  :hook
+  (prog-mode . corfu-mode)
+  (yaml-ts-mode . corfu-mode)
+  :init
+  ;; do NOT call global-corfu-mode
+  )
+#+end_src
 ** display-line-numbers
 
 It binds the <f7> key to the display-line-numbers-mode so that the lines on the side of the screen show/hide.
@@ -407,6 +418,12 @@ Enable the yascroll globally.
 ** gdb-x - improve GDB-MI user interface
 
 I want to try this. Need to replace my notebook with another one to run *nix. https://codeberg.org/pastor/gdb-x
+
+** mu/mu4e - Mu-based mua for emacs
+
+#+begin_src emacs-lisp
+
+#+end_src
 
 ** org - the plain text system major mode
 
