@@ -317,6 +317,8 @@
 (setq gdb-inferior-tty nil)
 (setq gdb-display-io-nopopup t)
 
+  (when (eq system-type 'darwin)
+    (add-to-list 'load-path "/opt/homebrew/share/emacs/site-lisp/mu/mu4e/"))
   (use-package mu4e
     :ensure nil
     :commands (mu4e mu4e-headers-search)

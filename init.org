@@ -422,6 +422,8 @@ I want to try this. Need to replace my notebook with another one to run *nix. ht
 ** mu/mu4e - Mu-based mua for emacs
 
 #+begin_src emacs-lisp
+  (when (eq system-type 'darwin)
+    (add-to-list 'load-path "/opt/homebrew/share/emacs/site-lisp/mu/mu4e/"))
   (use-package mu4e
     :ensure nil
     :commands (mu4e mu4e-headers-search)
