@@ -51,8 +51,7 @@ It has optimizations for the Emacs startup such as inhibiting startup screen or 
         spacious-padding
         vertico
         vterm
-        yascroll
-        zenburn-theme))
+        yascroll))
 
 ;; Initialize the packaging systems and prepares it to be used
 (package-initialize)

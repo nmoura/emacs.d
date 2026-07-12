@@ -24,8 +24,7 @@
         spacious-padding
         vertico
         vterm
-        yascroll
-        zenburn-theme))
+        yascroll))
 
 ;; Initialize the packaging systems and prepares it to be used
 (package-initialize)
