@@ -317,6 +317,47 @@
 (setq gdb-inferior-tty nil)
 (setq gdb-display-io-nopopup t)
 
+  (use-package mu4e
+    :ensure nil
+    :commands (mu4e mu4e-headers-search)
+    :config
+    (setq mu4e-maildir "~/Maildir"
+          mu4e-get-mail-command "mbsync alerts"
+          mu4e-update-interval 300
+          mu4e-change-filenames-when-moving t
+          mail-user-agent 'mu4e)
+
+    ;; alerts bookmark + shortcut
+    (add-to-list 'mu4e-bookmarks
+                 '(:name "Unread alerts"
+                         :query "maildir:/alerts/INBOX AND flag:unread"
+                         :key ?a))
+    (add-to-list 'mu4e-maildir-shortcuts '("/alerts/INBOX" . ?A)))
+
+  ;; Unread-alerts indicator (mode line)
+  (defvar my/alerts-mode-line-string ""
+    "Cached mode-line segment for unread pi-main alerts.")
+  (put 'my/alerts-mode-line-string 'risky-local-variable t)
+
+  (defun my/alerts-refresh-count ()
+    "Recount unread alerts (read-only mu query) and refresh the mode line."
+    (interactive)
+    (let ((n (with-temp-buffer
+               (if (zerop (call-process "mu" nil t nil
+                                        "find" "maildir:/alerts/INBOX" "flag:unread"))
+                   (count-lines (point-min) (point-max))
+                 0))))
+      (setq my/alerts-mode-line-string
+            (if (> n 0)
+                (propertize (format " ✉%d" n)
+                            'face 'mode-line-emphasis
+                            'help-echo "Unread pi-main alerts")
+              ""))
+      (force-mode-line-update t)
+      n))
+
+  (add-to-list 'global-mode-string 'my/alerts-mode-line-string t)
+
 (defun my/org-mode-setup ()
   (org-indent-mode)       ; prefixes text lines with virtual spaces to vertically
                           ; align with the headline text
@@ -468,12 +509,12 @@
                 (:ansibleLint (:enabled t)
                  :python (:interpreterPath "/home/nilton/.local/share/pipx/venvs/ansible-dev-tools/bin/python"))))
 
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            ;; Open your Org Super Agenda view
-            (org-agenda nil "u")
-            ;; Ensure only one window is open
-            (delete-other-windows)))
-;; Bury *scratch* buffer if it exists
-;;              (when (get-buffer "*scratch*")
-;;                (bury-buffer "*scratch*"))))
+  (add-hook 'emacs-startup-hook (lambda () (mu4e t)))
+  (with-eval-after-load 'mu4e
+    (add-hook 'mu4e-index-updated-hook #'my/alerts-refresh-count))
+  (run-with-timer 30 300 #'my/alerts-refresh-count)
+
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (org-agenda nil "u")
+              (delete-other-windows)))
