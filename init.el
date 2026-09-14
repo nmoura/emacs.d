@@ -1,8 +1,9 @@
+;; -*- lexical-binding: t; -*-
 (require 'package)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-(setq package-list
+(defvar package-list
       '(
         ansible
         ansible-doc
@@ -24,7 +25,8 @@
         spacious-padding
         vertico
         vterm
-        yascroll))
+        yascroll)
+      "Packages to install on startup")
 
 ;; Initialize the packaging systems and prepares it to be used
 (package-initialize)
@@ -72,13 +74,18 @@
 
 (setq org-directory "~/org")
 
+(defgroup my nil
+  "Personal configuration."
+  :group 'convenience)
+
 (defcustom my/path-aliases
   (list :emacs    "~/.emacs.d"
         :org      org-directory
         :gtd      (expand-file-name "gtd" org-directory)
         :personal (expand-file-name "personal" org-directory))
-  "Location of my paths for ease of usage. Customize for each
-              environment if needed.")
+    "Plist of path aliases for ease of usage."
+  :type '(plist :key-type symbol :value-type directory)
+  :group 'my)
 
 (defun my/path (dir &optional subpath)
   (let ((dir (file-name-as-directory
@@ -88,17 +95,29 @@
     (concat dir subpath)))
 
 (defcustom myinbox (my/path :gtd "inbox.org")
-  "This points to the inbox org file")
+  "Path to the inbox org file"
+  :type 'file
+  :group 'my)
 (defcustom mypersonal (my/path :gtd "personal.org")
-  "This points to the personal org file")
+  "Path to the personal org file"
+  :type 'file
+  :group 'my)
 (defcustom mywork (my/path :gtd "work.org")
-  "This points to the work org file")
+  "Path to the work org file"
+  :type 'file
+  :group 'my)
 (defcustom myprojects (my/path :gtd "projects.org")
-  "This points to the projects org file")
+  "Path to the projects org file"
+  :type 'file
+  :group 'my)
 (defcustom myjournal (my/path :gtd "journal.org")
-  "This points to the journal org file")
+  "Path to the journal org file"
+  :type 'file
+  :group 'my)
 (defcustom mymasters (my/path :gtd "masters.org")
-  "This points to the masters org file")
+  "Path to the masters org file"
+  :type 'file
+  :group 'my)
 
 (add-to-list 'exec-path (expand-file-name "~/.local/bin"))
 (setenv "PATH" (concat (expand-file-name "~/.local/bin") ":" (getenv "PATH")))
@@ -153,25 +172,25 @@
 (setq fontaine-presets
       '((small
          :default-family "Aporetic Serif Mono"
-         :default-height 80
+         :default-height 150
          :variable-pitch-family "Aporetic Sans")
         (regular) ; like this it uses all the fallback values and is named `regular'
         (medium
          :default-weight semilight
-         :default-height 115
+         :default-height 180
          :bold-weight extrabold)
         (large
          :inherit medium
-         :default-height 150)
+         :default-height 200)
         (presentation
-         :default-height 180)
+         :default-height 220)
         (t
          ;; I keep all properties for didactic purposes, but most can be
          ;; omitted.  See the fontaine manual for the technicalities:
          ;; <https://protesilaos.com/emacs/fontaine>.
          :default-family "Aporetic Sans Mono"
          :default-weight regular
-         :default-height 100
+         :default-height 180
 
          :fixed-pitch-family nil ; falls back to :default-family
          :fixed-pitch-weight nil ; falls back to :default-weight
@@ -219,7 +238,7 @@
 
 ;; Set the last preset or fall back to desired style from `fontaine-presets'
 ;; (the `regular' in this case).
-(fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
+(fontaine-set-preset (or (fontaine-restore-latest-preset) 'large))
 
 ;; Persist the latest font preset when closing/starting Emacs and
 ;; while switching between themes.
