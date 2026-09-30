@@ -432,6 +432,7 @@ Enable the yascroll globally.
 (setq gdb-use-separate-frame nil)
 (setq gdb-inferior-tty nil)
 (setq gdb-display-io-nopopup t)
+(setq gdb-non-stop-setting nil)
 #+end_src
 
 ** gdb-x - improve GDB-MI user interface

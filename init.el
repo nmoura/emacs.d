@@ -334,6 +334,7 @@
 (setq gdb-use-separate-frame nil)
 (setq gdb-inferior-tty nil)
 (setq gdb-display-io-nopopup t)
+(setq gdb-non-stop-setting nil)
 
   (when (eq system-type 'darwin)
     (add-to-list 'load-path "/opt/homebrew/share/emacs/site-lisp/mu/mu4e/"))
